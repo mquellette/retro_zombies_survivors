@@ -27,16 +27,11 @@
         canvas.style.marginLeft = offsetX + 'px';
         canvas.style.marginTop = offsetY + 'px';
 
-        // Update input mapping
-        Input._sx = scale;
-        Input._sy = scale;
-        Input._ox = offsetX;
-        Input._oy = offsetY;
     }
 
     resize();
     window.addEventListener('resize', resize);
-    Input.init(canvas, scale, offsetX, offsetY);
+    Input.init(canvas);
 
     // Disable context menu
     canvas.addEventListener('contextmenu', e => e.preventDefault());

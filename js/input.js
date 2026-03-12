@@ -54,18 +54,14 @@ const Input = {
     tapY: 0,
     tapped: false,
 
-    init(canvas, scaleX, scaleY, offsetX, offsetY) {
-        this._sx = scaleX;
-        this._sy = scaleY;
-        this._ox = offsetX;
-        this._oy = offsetY;
+    init(canvas) {
+        this._canvas = canvas;
 
         // Touch
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             for (const t of e.changedTouches) {
-                const x = (t.clientX - this._ox) / this._sx;
-                const y = (t.clientY - this._oy) / this._sy;
+                const { x, y } = this._toGame(t.clientX, t.clientY);
                 this.tapX = x;
                 this.tapY = y;
                 this.tapped = true;
@@ -85,8 +81,7 @@ const Input = {
             e.preventDefault();
             for (const t of e.changedTouches) {
                 if (t.identifier === Joystick.touchId) {
-                    const x = (t.clientX - this._ox) / this._sx;
-                    const y = (t.clientY - this._oy) / this._sy;
+                    const { x, y } = this._toGame(t.clientX, t.clientY);
                     Joystick.dx = x - Joystick.startX;
                     Joystick.dy = y - Joystick.startY;
                 }
@@ -105,8 +100,7 @@ const Input = {
         // Mouse fallback (for desktop testing)
         let mouseDown = false;
         canvas.addEventListener('mousedown', (e) => {
-            const x = (e.clientX - this._ox) / this._sx;
-            const y = (e.clientY - this._oy) / this._sy;
+            const { x, y } = this._toGame(e.clientX, e.clientY);
             mouseDown = true;
             this.tapX = x;
             this.tapY = y;
@@ -119,8 +113,7 @@ const Input = {
         });
         canvas.addEventListener('mousemove', (e) => {
             if (!mouseDown) return;
-            const x = (e.clientX - this._ox) / this._sx;
-            const y = (e.clientY - this._oy) / this._sy;
+            const { x, y } = this._toGame(e.clientX, e.clientY);
             Joystick.dx = x - Joystick.startX;
             Joystick.dy = y - Joystick.startY;
         });
@@ -128,6 +121,14 @@ const Input = {
             mouseDown = false;
             Joystick.reset();
         });
+    },
+
+    _toGame(clientX, clientY) {
+        const rect = this._canvas.getBoundingClientRect();
+        return {
+            x: (clientX - rect.left) / rect.width * GAME_W,
+            y: (clientY - rect.top) / rect.height * GAME_H,
+        };
     },
 
     consumeTap() {
