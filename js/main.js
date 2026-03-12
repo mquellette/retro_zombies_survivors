@@ -1,9 +1,14 @@
 // ── Bootstrap ──
 (function () {
-    // Telegram WebApp: expand to full screen
+    // Telegram WebApp: fullscreen + disable swipe close
     if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.expand();
-        Telegram.WebApp.ready();
+        try {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            Telegram.WebApp.isClosingConfirmationEnabled = true;
+        } catch(e) {}
+        try { Telegram.WebApp.disableVerticalSwipes(); } catch(e) {}
+        try { Telegram.WebApp.requestFullscreen(); } catch(e) {}
     }
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
@@ -38,8 +43,11 @@
     window.addEventListener('resize', resize);
     Input.init(canvas);
 
-    // Disable context menu
+    // Disable context menu and all default touch behavior
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
 
     // ── Main Loop ──
     let lastTime = 0;
