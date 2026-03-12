@@ -41,22 +41,34 @@ const DIR_FRAMES = {
     '-1,1':  7,  // down-left
 };
 
-function getDirFrame(fx, fy) {
-    if (fx === 0 && fy === 0) return 0; // idle → down
-    // Angle-based detection with wider cardinal zones (~60° cardinal, ~30° diagonal)
-    const angle = Math.atan2(fy, fx); // radians, 0=right, π/2=down
+// Sector center angles for each direction row (in degrees, 0=right clockwise)
+// Row order: 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
+const _dirCenters = [90, 135, 180, 225, 270, 315, 0, 45];
+
+function _angleDist(a, b) {
+    let d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+}
+
+function getDirFrame(fx, fy, prevDir) {
+    if (fx === 0 && fy === 0) return prevDir != null ? prevDir : 0;
+    const angle = Math.atan2(fy, fx);
     let deg = angle * (180 / Math.PI);
     if (deg < 0) deg += 360;
-    // Spritesheet row order (counter-clockwise):
-    // 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
-    if (deg >= 345 || deg < 15)  return 6; // right
-    if (deg >= 15 && deg < 75)   return 7; // down-right
-    if (deg >= 75 && deg < 105)  return 0; // down
-    if (deg >= 105 && deg < 165) return 1; // down-left
-    if (deg >= 165 && deg < 195) return 2; // left
-    if (deg >= 195 && deg < 255) return 3; // up-left
-    if (deg >= 255 && deg < 285) return 4; // up
-    return 5; // up-right (285-345)
+
+    // Find nearest sector
+    let bestDir = 0, bestDist = 999;
+    for (let i = 0; i < 8; i++) {
+        const d = _angleDist(deg, _dirCenters[i]);
+        if (d < bestDist) { bestDist = d; bestDir = i; }
+    }
+
+    // Hysteresis: keep previous direction unless new one is >10° closer
+    if (prevDir != null && prevDir !== bestDir) {
+        const prevDist = _angleDist(deg, _dirCenters[prevDir]);
+        if (prevDist - bestDist < 10) return prevDir;
+    }
+    return bestDir;
 }
 
 // ── Pre-rendered sprite cache (walk animation) ──
@@ -118,8 +130,8 @@ const SpriteCache = {
                 c.height = renderH;
                 const cx = c.getContext('2d');
                 cx.imageSmoothingEnabled = false;
-                // Inset by 1px to avoid bleeding pixels from adjacent cells
-                const pad = 1;
+                // Inset to avoid bleeding pixels from adjacent cells
+                const pad = 2;
                 const sx = col * cellW + pad;
                 const sy = row * cellH + pad;
                 const sw = cellW - pad * 2;

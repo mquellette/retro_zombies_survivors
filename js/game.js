@@ -54,8 +54,7 @@ const Game = {
             const spd = p.speed * p.speedMul * dt;
             p.x += (mx / len) * spd;
             p.y += (my / len) * spd;
-            p.facingX = mx;
-            p.facingY = my;
+            p.dir = getDirFrame(mx, my, p.dir);
             // Walk animation — speed tied to movement speed
             const moveSpeed = (p.speed * p.speedMul * len);
             const stepInterval = moveSpeed > 0 ? Math.max(0.06, 8 / moveSpeed) : 0.15;
@@ -126,10 +125,9 @@ const Game = {
             const my = dy / d;
             e.x += mx * e.speed * dt;
             e.y += my * e.speed * dt;
-            // Track facing direction and walk animation
+            // Track facing direction with hysteresis
             if (Math.abs(mx) > 0.01 || Math.abs(my) > 0.01) {
-                e.facingX = mx;
-                e.facingY = my;
+                e.dir = getDirFrame(mx, my, e.dir);
             }
             const enemyStepInterval = e.speed > 0 ? Math.max(0.06, 8 / e.speed) : 0.15;
             e.walkTimer = (e.walkTimer || 0) + dt;
@@ -228,7 +226,7 @@ const Game = {
         for (const e of this.enemies) {
             const zc = this._zombieCache;
             if (zc && zc._grid) {
-                const dir = getDirFrame(e.facingX || 0, e.facingY || 1);
+                const dir = e.dir || 0;
                 const frame = zc.getFrame(dir, e.walkFrame || 0);
                 if (frame) {
                     const dw = zc._drawW;
@@ -269,7 +267,7 @@ const Game = {
             if (!SpriteCache._grid || SpriteCache._builtDpr !== dpr) {
                 SpriteCache.build(heroImg, 48);
             }
-            const dir = getDirFrame(p.facingX, p.facingY);
+            const dir = p.dir || 0;
             const animFrame = p.walkFrame || 0;
             const cached = SpriteCache.getFrame(dir, animFrame);
             if (cached) {
