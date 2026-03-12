@@ -5,7 +5,7 @@ const Joystick = {
     startY: 0,
     dx: 0,
     dy: 0,
-    radius: 50,
+    radius: 40,
     deadzone: 8,
     pointerId: null,
 
@@ -28,11 +28,11 @@ const Joystick = {
     },
 
     // Fixed joystick position (always visible bottom-left)
-    baseX: 60,
+    baseX: 50,
     baseY: 0, // set in init based on GAME_H
 
     initPosition() {
-        this.baseY = GAME_H - 80;
+        this.baseY = GAME_H - 70;
     },
 
     draw(ctx) {
@@ -57,7 +57,7 @@ const Joystick = {
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(tx, ty, 16, 0, Math.PI * 2);
+        ctx.arc(tx, ty, 13, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.globalAlpha = 1;

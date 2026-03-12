@@ -184,17 +184,8 @@ const Game = {
     // ── Draw ──
     draw(ctx) {
         // Background
-        ctx.fillStyle = '#277553';
+        ctx.fillStyle = '#1f6b4a';
         ctx.fillRect(0, 0, GAME_W, GAME_H);
-
-        // Ground grid (subtle)
-        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-        for (let x = 0; x < GAME_W; x += TILE) {
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GAME_H); ctx.stroke();
-        }
-        for (let y = 0; y < GAME_H; y += TILE) {
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(GAME_W, y); ctx.stroke();
-        }
 
         // Gems
         for (const g of this.gems) {
@@ -272,33 +263,33 @@ const Game = {
 
         // ── XP Bar (full width, magenta) ──
         const barY = 4;
-        const barH = 12;
+        const barH = 16;
         const barX = pad;
         const barW = GAME_W - pad * 2;
         // Background
-        ctx.fillStyle = '#3a0a3a';
+        ctx.fillStyle = '#2a0a2a';
         ctx.fillRect(barX, barY, barW, barH);
         // Fill
-        ctx.fillStyle = '#e020e0';
+        ctx.fillStyle = '#ff44ff';
         const xpFill = Math.min(p.xp / this.xpToNext, 1);
         ctx.fillRect(barX, barY, barW * xpFill, barH);
         // Border
-        ctx.strokeStyle = '#8a2be2';
+        ctx.strokeStyle = '#6a1a6a';
         ctx.lineWidth = 1;
         ctx.strokeRect(barX, barY, barW, barH);
         // "LVL X" label right-aligned inside bar
         ctx.fillStyle = '#ffffff';
-        ctx.font = '8px monospace';
+        ctx.font = '10px monospace';
         ctx.textAlign = 'right';
-        ctx.fillText(`LVL ${p.level}`, barX + barW - 3, barY + barH - 3);
+        ctx.fillText(`LVL ${p.level}`, barX + barW - 4, barY + barH - 4);
 
         // ── Second row: ability slots | timer | kill/coin counters ──
-        const rowY = barY + barH + 5;
+        const rowY = barY + barH + 6;
 
         // Ability slots (4 gray squares, left side)
-        const slotSize = 18;
-        const slotGap = 3;
-        ctx.fillStyle = '#4a5a4a';
+        const slotSize = 22;
+        const slotGap = 4;
+        ctx.fillStyle = '#5a6a5a';
         for (let i = 0; i < 4; i++) {
             const sx = pad + i * (slotSize + slotGap);
             ctx.fillRect(sx, rowY, slotSize, slotSize);
@@ -309,34 +300,34 @@ const Game = {
         const mins = Math.floor(elapsed / 60);
         const secs = Math.floor(elapsed % 60);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '14px monospace';
+        ctx.font = '16px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`, GAME_W / 2, rowY + 14);
+        ctx.fillText(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`, GAME_W / 2, rowY + 17);
 
         // Kill & coin counters (right side, with icons)
-        const iconSize = 12;
+        const iconSize = 14;
         const counterX = GAME_W - pad;
 
         // Skull (kills) - top row
         const skullImg = Assets.get('skull_icon');
         ctx.textAlign = 'right';
-        ctx.font = '9px monospace';
+        ctx.font = '10px monospace';
         ctx.fillStyle = '#ffffff';
         if (skullImg) {
             ctx.drawImage(skullImg, counterX - iconSize, rowY, iconSize, iconSize);
-            ctx.fillText(`${p.kills}`, counterX - iconSize - 3, rowY + 9);
+            ctx.fillText(`${p.kills}`, counterX - iconSize - 3, rowY + 11);
         } else {
-            ctx.fillText(`☠${p.kills}`, counterX, rowY + 9);
+            ctx.fillText(`☠${p.kills}`, counterX, rowY + 11);
         }
 
         // Coin - bottom row
         const coinImg = Assets.get('coin_icon');
-        const coinY = rowY + iconSize + 2;
+        const coinY = rowY + iconSize + 3;
         if (coinImg) {
             ctx.drawImage(coinImg, counterX - iconSize, coinY, iconSize, iconSize);
-            ctx.fillText(`${p.coins || 0}`, counterX - iconSize - 3, coinY + 9);
+            ctx.fillText(`${p.coins || 0}`, counterX - iconSize - 3, coinY + 11);
         } else {
-            ctx.fillText(`●${p.coins || 0}`, counterX, coinY + 9);
+            ctx.fillText(`●${p.coins || 0}`, counterX, coinY + 11);
         }
 
         ctx.textAlign = 'left';
