@@ -63,49 +63,80 @@ function getDirFrame(fx, fy) {
 }
 
 // ── Pre-rendered sprite cache (walk animation) ──
-// Stores frames as _grid[direction][frameIndex] for 4×8 spritesheet
+// Builds offscreen canvases from a spritesheet grid (cols=anim frames, rows=directions).
+// Auto-detects bounding box per frame and aligns all frames within a direction
+// to a common foot-center anchor to prevent horizontal jumping.
 const SpriteCache = {
-    _grid: null,     // [dir][frame] = offscreen canvas
+    _grid: null,     // [dir][frame] = {canvas, anchorX}
     _builtDpr: 0,
     _cols: 4,        // animation frames per direction
     _rows: 8,        // directions
+    _drawW: 0,       // game-unit draw width
+    _drawH: 0,       // game-unit draw height
 
-    build(sheetImg, targetSize) {
+    build(sheetImg, targetH) {
         const dpr = window._dpr || 1;
         this._builtDpr = dpr;
-        this._targetSize = targetSize;
         this._grid = [];
-        const cellW = sheetImg.width / this._cols;   // 256
-        const cellH = sheetImg.height / this._rows;  // 128
-        // Sprite is square — use the smaller dimension as frame size
-        // and center-crop the wider dimension
-        const frameSize = Math.min(cellW, cellH);     // 128
-        const offX = (cellW - frameSize) / 2;         // 64 (center crop horizontally)
-        const offY = (cellH - frameSize) / 2;         // 0
-        const renderSize = Math.round(targetSize * dpr);
+
+        const cellW = sheetImg.width / this._cols;   // e.g. 192
+        const cellH = sheetImg.height / this._rows;  // e.g. 172
+
+        // Read pixel data once for anchor detection
+        const tmpC = document.createElement('canvas');
+        tmpC.width = sheetImg.width;
+        tmpC.height = sheetImg.height;
+        const tmpCtx = tmpC.getContext('2d');
+        tmpCtx.drawImage(sheetImg, 0, 0);
+
+        // Game-unit dimensions preserving cell aspect ratio
+        this._drawH = targetH;
+        this._drawW = Math.round(targetH * (cellW / cellH));
+
+        const renderH = Math.round(this._drawH * dpr);
+        const renderW = Math.round(this._drawW * dpr);
+
         for (let row = 0; row < this._rows; row++) {
             this._grid[row] = [];
+
+            // Find per-frame foot center (bottom 15% horizontal center-of-mass)
+            const footCenters = [];
+            for (let col = 0; col < this._cols; col++) {
+                const data = tmpCtx.getImageData(col * cellW, row * cellH, cellW, cellH).data;
+                const footZone = Math.max(Math.round(cellH * 0.15), 4);
+                let sumX = 0, count = 0;
+                for (let y = cellH - footZone; y < cellH; y++) {
+                    for (let x = 0; x < cellW; x++) {
+                        if (data[(y * cellW + x) * 4 + 3] > 10) { sumX += x; count++; }
+                    }
+                }
+                footCenters.push(count > 0 ? sumX / count : cellW / 2);
+            }
+            const anchor = footCenters.reduce((a, b) => a + b, 0) / footCenters.length;
+            const anchorGameX = (anchor / cellW) * this._drawW;
+
             for (let col = 0; col < this._cols; col++) {
                 const c = document.createElement('canvas');
-                c.width = renderSize;
-                c.height = renderSize;
+                c.width = renderW;
+                c.height = renderH;
                 const cx = c.getContext('2d');
                 cx.imageSmoothingEnabled = false;
                 cx.drawImage(sheetImg,
-                    col * cellW + offX, row * cellH + offY, frameSize, frameSize,
-                    0, 0, renderSize, renderSize);
-                this._grid[row].push(c);
+                    col * cellW, row * cellH, cellW, cellH,
+                    0, 0, renderW, renderH);
+                this._grid[row].push({ canvas: c, anchorX: anchorGameX });
             }
         }
     },
 
     getFrame(dir, animFrame) {
-        if (!this._grid) return null;
-        return this._grid[dir] ? this._grid[dir][animFrame % this._cols] : null;
+        if (!this._grid || !this._grid[dir]) return null;
+        return this._grid[dir][animFrame % this._cols];
     }
 };
 
 // ── Load all assets ──
-Assets.load('hero_walk', 'Assets/Sprites/Player/nb2_walk_sheet_4x8_clean.png');
+Assets.load('hero_walk', 'Assets/Final Assests/Characters/Joey.png');
+Assets.load('zombie_walk', 'Assets/Final Assests/Enemies/zombie-basic.png');
 Assets.load('skull_icon', 'Assets/UI/HUD/skull_icon Background Removed.png');
 Assets.load('coin_icon', 'Assets/UI/HUD/coin_icon Background Removed.png');

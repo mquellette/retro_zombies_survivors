@@ -21,6 +21,7 @@ const Game = {
         this.bullets = [];
         this.enemies = [];
         this.gems = [];
+        this._zombieCache = null;
         this.timer = CONFIG.round.duration;
         this.paused = false;
         this.state = 'playing';
@@ -119,8 +120,20 @@ const Game = {
             const dx = p.x - e.x;
             const dy = p.y - e.y;
             const d = Math.sqrt(dx * dx + dy * dy) || 1;
-            e.x += (dx / d) * e.speed * dt;
-            e.y += (dy / d) * e.speed * dt;
+            const mx = dx / d;
+            const my = dy / d;
+            e.x += mx * e.speed * dt;
+            e.y += my * e.speed * dt;
+            // Track facing direction and walk animation
+            if (Math.abs(mx) > 0.01 || Math.abs(my) > 0.01) {
+                e.facingX = mx;
+                e.facingY = my;
+            }
+            e.walkTimer = (e.walkTimer || 0) + dt;
+            if (e.walkTimer >= 0.15) {
+                e.walkTimer -= 0.15;
+                e.walkFrame = ((e.walkFrame || 0) + 1) % 4;
+            }
 
             // Damage player on contact
             e.hitCooldown -= dt;
@@ -203,9 +216,28 @@ const Game = {
         }
 
         // Enemies
+        const zombieImg = Assets.get('zombie_walk');
+        if (zombieImg && !this._zombieCache) {
+            this._zombieCache = Object.create(SpriteCache);
+            this._zombieCache._grid = null;
+            this._zombieCache.build(zombieImg, 40);
+        }
         for (const e of this.enemies) {
-            ctx.fillStyle = e.color;
-            ctx.fillRect(e.x - e.w / 2, e.y - e.h / 2, e.w, e.h);
+            const zc = this._zombieCache;
+            if (zc && zc._grid) {
+                const dir = getDirFrame(e.facingX || 0, e.facingY || 1);
+                const frame = zc.getFrame(dir, e.walkFrame || 0);
+                if (frame) {
+                    const dw = zc._drawW;
+                    const dh = zc._drawH;
+                    const ex = Math.round(e.x - frame.anchorX);
+                    const ey = Math.round(e.y - dh / 2);
+                    ctx.drawImage(frame.canvas, ex, ey, dw, dh);
+                }
+            } else {
+                ctx.fillStyle = e.color;
+                ctx.fillRect(e.x - e.w / 2, e.y - e.h / 2, e.w, e.h);
+            }
             // HP bar
             if (e.hp < e.maxHp) {
                 const bw = e.w;
@@ -237,10 +269,13 @@ const Game = {
             const dir = getDirFrame(p.facingX, p.facingY);
             const animFrame = p.walkFrame || 0;
             const cached = SpriteCache.getFrame(dir, animFrame);
-            const dx = Math.round(p.x - 24);
-            const dy = Math.round(p.y - 24);
             if (cached) {
-                ctx.drawImage(cached, dx, dy, 48, 48);
+                const dw = SpriteCache._drawW;
+                const dh = SpriteCache._drawH;
+                // Position so player center aligns with foot anchor
+                const dx = Math.round(p.x - cached.anchorX);
+                const dy = Math.round(p.y - dh / 2);
+                ctx.drawImage(cached.canvas, dx, dy, dw, dh);
             }
         } else {
             ctx.fillStyle = COL.player;
