@@ -223,7 +223,7 @@ const Game = {
             const frame = getDirFrame(p.facingX, p.facingY);
             const fw = 128; // frame width in spritesheet
             const fh = 128; // frame height
-            const drawSize = 32; // render size (must be integer divisor of 128 to avoid shimmer)
+            const drawSize = 48; // matches Figma spec
             const dx = Math.round(p.x - drawSize / 2);
             const dy = Math.round(p.y - drawSize / 2);
             ctx.drawImage(heroImg, frame * fw, 0, fw, fh,
