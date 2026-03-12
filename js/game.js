@@ -55,17 +55,6 @@ const Game = {
             p.x += (mx / len) * spd;
             p.y += (my / len) * spd;
             p.dir = getDirFrame(mx, my, p.dir);
-            // Walk animation — speed tied to movement speed
-            const moveSpeed = (p.speed * p.speedMul * len);
-            const stepInterval = moveSpeed > 0 ? Math.max(0.06, 8 / moveSpeed) : 0.15;
-            p.walkTimer = (p.walkTimer || 0) + dt;
-            if (p.walkTimer >= stepInterval) {
-                p.walkTimer -= stepInterval;
-                p.walkFrame = ((p.walkFrame || 0) + 1) % 4;
-            }
-        } else {
-            p.walkFrame = 0;
-            p.walkTimer = 0;
         }
         // Clamp to bounds
         p.x = clamp(p.x, p.w / 2, GAME_W - p.w / 2);
@@ -128,12 +117,6 @@ const Game = {
             // Track facing direction with hysteresis
             if (Math.abs(mx) > 0.01 || Math.abs(my) > 0.01) {
                 e.dir = getDirFrame(mx, my, e.dir);
-            }
-            const enemyStepInterval = e.speed > 0 ? Math.max(0.06, 8 / e.speed) : 0.15;
-            e.walkTimer = (e.walkTimer || 0) + dt;
-            if (e.walkTimer >= enemyStepInterval) {
-                e.walkTimer -= enemyStepInterval;
-                e.walkFrame = ((e.walkFrame || 0) + 1) % 4;
             }
 
             // Damage player on contact
@@ -227,7 +210,7 @@ const Game = {
             const zc = this._zombieCache;
             if (zc && zc._grid) {
                 const dir = e.dir || 0;
-                const frame = zc.getFrame(dir, e.walkFrame || 0);
+                const frame = zc.getFrame(dir, 0);
                 if (frame) {
                     const dw = zc._drawW;
                     const dh = zc._drawH;
@@ -268,8 +251,7 @@ const Game = {
                 SpriteCache.build(heroImg, 48);
             }
             const dir = p.dir || 0;
-            const animFrame = p.walkFrame || 0;
-            const cached = SpriteCache.getFrame(dir, animFrame);
+            const cached = SpriteCache.getFrame(dir, 0);
             if (cached) {
                 const dw = SpriteCache._drawW;
                 const dh = SpriteCache._drawH;
