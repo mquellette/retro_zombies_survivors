@@ -1,6 +1,6 @@
 // ── Constants ──
 const GAME_W = 360;
-const GAME_H = 640;
+let GAME_H = 640; // Will be adjusted to screen aspect ratio
 const TILE = 16;
 
 // ── Colors (placeholder palette) ──

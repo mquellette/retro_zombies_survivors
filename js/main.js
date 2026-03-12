@@ -17,25 +17,16 @@
     function resize() {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
-        const ratio = GAME_W / GAME_H;
-        let cw, ch;
 
-        if (ww / wh < ratio) {
-            cw = ww;
-            ch = ww / ratio;
-        } else {
-            ch = wh;
-            cw = wh * ratio;
-        }
+        // Adapt game height to screen aspect ratio, keeping width = 360
+        GAME_H = Math.round(GAME_W * (wh / ww));
 
-        canvas.width = cw;
-        canvas.height = ch;
-        scale = cw / GAME_W;
-        offsetX = (ww - cw) / 2;
-        offsetY = (wh - ch) / 2;
-        canvas.style.marginLeft = offsetX + 'px';
-        canvas.style.marginTop = offsetY + 'px';
-
+        // Fill entire screen
+        scale = ww / GAME_W;
+        canvas.width = ww;
+        canvas.height = wh;
+        canvas.style.marginLeft = '0';
+        canvas.style.marginTop = '0';
     }
 
     resize();
