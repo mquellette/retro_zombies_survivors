@@ -220,8 +220,9 @@ const Game = {
         const p = this.player;
         const heroImg = Assets.get('hero');
         if (heroImg) {
-            // Build sprite cache once
-            if (!SpriteCache._frames) {
+            // Build sprite cache at native device resolution (rebuild if dpr changes)
+            const dpr = window._dpr || 1;
+            if (!SpriteCache._frames || SpriteCache._builtDpr !== dpr) {
                 SpriteCache.build(heroImg, 128, 128, 8, 48);
             }
             const frame = getDirFrame(p.facingX, p.facingY);
@@ -229,8 +230,8 @@ const Game = {
             const dx = Math.round(p.x - 24);
             const dy = Math.round(p.y - 24);
             if (cached) {
-                // Draw pre-rendered 48×48 frame at 1:1 — no scaling
-                ctx.drawImage(cached, dx, dy);
+                // Draw dpr-sized cache into 48×48 game units
+                ctx.drawImage(cached, dx, dy, 48, 48);
             } else {
                 ctx.drawImage(heroImg, frame * 128, 0, 128, 128, dx, dy, 48, 48);
             }

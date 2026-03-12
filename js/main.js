@@ -15,15 +15,19 @@
     function resize() {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
+        const dpr = window.devicePixelRatio || 1;
 
         // Adapt game height to screen aspect ratio, keeping width = 360
         GAME_H = Math.round(GAME_W * (wh / ww));
 
-        // Canvas at exact game resolution — CSS stretches to screen
-        canvas.width = GAME_W;
-        canvas.height = GAME_H;
+        // Canvas at native device resolution for crisp rendering
+        canvas.width = Math.round(GAME_W * dpr);
+        canvas.height = Math.round(GAME_H * dpr);
         canvas.style.width = ww + 'px';
         canvas.style.height = wh + 'px';
+
+        // Store dpr globally for the render loop
+        window._dpr = dpr;
     }
 
     resize();
@@ -48,6 +52,8 @@
         lastTime = time;
 
         ctx.save();
+        const dpr = window._dpr || 1;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.imageSmoothingEnabled = false;
 
         // Handle taps for current screen

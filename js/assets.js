@@ -67,16 +67,22 @@ function getDirFrame(fx, fy) {
 // so drawImage() is always 1:1 with no per-frame scaling artifacts.
 const SpriteCache = {
     _frames: null, // array of offscreen canvases, one per direction
+    _builtDpr: 0,  // dpr used when cache was built
 
     build(sheetImg, frameW, frameH, numFrames, targetSize) {
+        const dpr = window._dpr || 1;
+        this._builtDpr = dpr;
+        this._targetSize = targetSize;
         this._frames = [];
+        // Pre-render at native device resolution for crisp sprites
+        const renderSize = Math.round(targetSize * dpr);
         for (let i = 0; i < numFrames; i++) {
             const c = document.createElement('canvas');
-            c.width = targetSize;
-            c.height = targetSize;
+            c.width = renderSize;
+            c.height = renderSize;
             const cx = c.getContext('2d');
             cx.imageSmoothingEnabled = false;
-            cx.drawImage(sheetImg, i * frameW, 0, frameW, frameH, 0, 0, targetSize, targetSize);
+            cx.drawImage(sheetImg, i * frameW, 0, frameW, frameH, 0, 0, renderSize, renderSize);
             this._frames.push(c);
         }
     },
