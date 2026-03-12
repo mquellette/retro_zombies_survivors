@@ -75,8 +75,13 @@ const SpriteCache = {
         this._builtDpr = dpr;
         this._targetSize = targetSize;
         this._grid = [];
-        const frameW = sheetImg.width / this._cols;   // 256
-        const frameH = sheetImg.height / this._rows;  // 128
+        const cellW = sheetImg.width / this._cols;   // 256
+        const cellH = sheetImg.height / this._rows;  // 128
+        // Sprite is square — use the smaller dimension as frame size
+        // and center-crop the wider dimension
+        const frameSize = Math.min(cellW, cellH);     // 128
+        const offX = (cellW - frameSize) / 2;         // 64 (center crop horizontally)
+        const offY = (cellH - frameSize) / 2;         // 0
         const renderSize = Math.round(targetSize * dpr);
         for (let row = 0; row < this._rows; row++) {
             this._grid[row] = [];
@@ -87,7 +92,7 @@ const SpriteCache = {
                 const cx = c.getContext('2d');
                 cx.imageSmoothingEnabled = false;
                 cx.drawImage(sheetImg,
-                    col * frameW, row * frameH, frameW, frameH,
+                    col * cellW + offX, row * cellH + offY, frameSize, frameSize,
                     0, 0, renderSize, renderSize);
                 this._grid[row].push(c);
             }
