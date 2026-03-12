@@ -30,11 +30,10 @@
     }
 
     resize();
-    Joystick.initPosition();
-    window.addEventListener('resize', () => { resize(); Joystick.initPosition(); });
+    window.addEventListener('resize', resize);
     // Telegram expand/fullscreen may change viewport async — re-check
-    setTimeout(() => { resize(); Joystick.initPosition(); }, 300);
-    setTimeout(() => { resize(); Joystick.initPosition(); }, 1000);
+    setTimeout(resize, 300);
+    setTimeout(resize, 1000);
     Input.init(canvas);
 
     // Disable context menu and all default touch behavior
