@@ -12,8 +12,6 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 
-    let scale, offsetX, offsetY;
-
     function resize() {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
@@ -21,12 +19,11 @@
         // Adapt game height to screen aspect ratio, keeping width = 360
         GAME_H = Math.round(GAME_W * (wh / ww));
 
-        // Fill entire screen
-        scale = ww / GAME_W;
-        canvas.width = ww;
-        canvas.height = wh;
-        canvas.style.marginLeft = '0';
-        canvas.style.marginTop = '0';
+        // Canvas at exact game resolution — CSS stretches to screen
+        canvas.width = GAME_W;
+        canvas.height = GAME_H;
+        canvas.style.width = ww + 'px';
+        canvas.style.height = wh + 'px';
     }
 
     resize();
@@ -50,9 +47,7 @@
         const dt = Math.min((time - lastTime) / 1000, 0.05); // cap delta
         lastTime = time;
 
-        // Scale canvas to game coordinates
         ctx.save();
-        ctx.scale(scale, scale);
         ctx.imageSmoothingEnabled = false;
 
         // Handle taps for current screen
