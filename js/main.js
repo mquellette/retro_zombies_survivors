@@ -12,19 +12,41 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 
+    const container = document.getElementById('game-container');
+
     function resize() {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
         const dpr = window.devicePixelRatio || 1;
+        const screenRatio = wh / ww;
 
-        // Adapt game height to screen aspect ratio, keeping width = 360
-        GAME_H = Math.round(GAME_W * (wh / ww));
+        // On wide screens (desktop/landscape), constrain to mobile-like 9:16 ratio
+        let containerW, containerH;
+        if (screenRatio < 1) {
+            // Landscape/desktop: fit a portrait container inside the window
+            containerH = wh;
+            containerW = Math.round(containerH * (9 / 16));
+            if (containerW > ww) {
+                containerW = ww;
+                containerH = Math.round(containerW * (16 / 9));
+            }
+        } else {
+            // Portrait/mobile: fill the screen
+            containerW = ww;
+            containerH = wh;
+        }
+
+        container.style.width = containerW + 'px';
+        container.style.height = containerH + 'px';
+
+        // Adapt game height to container aspect ratio, keeping width = 360
+        GAME_H = Math.round(GAME_W * (containerH / containerW));
 
         // Canvas at native device resolution for crisp rendering
         canvas.width = Math.round(GAME_W * dpr);
         canvas.height = Math.round(GAME_H * dpr);
-        canvas.style.width = ww + 'px';
-        canvas.style.height = wh + 'px';
+        canvas.style.width = containerW + 'px';
+        canvas.style.height = containerH + 'px';
 
         // Store dpr globally for the render loop
         window._dpr = dpr;
