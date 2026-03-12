@@ -28,22 +28,22 @@ const Assets = {
 };
 
 // ── Sprite direction mapping ──
-// Spritesheet frame order (left to right, clockwise from down):
-// 0=down, 1=down-right, 2=right, 3=up-right, 4=up, 5=up-left, 6=left, 7=down-left
+// Spritesheet frame order (counter-clockwise from down):
+// 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
 const DIR_FRAMES = {
     '0,1':   0,  // down
-    '1,1':   1,  // down-right
-    '1,0':   2,  // right
-    '1,-1':  3,  // up-right
+    '-1,1':  1,  // down-left
+    '-1,0':  2,  // left
+    '-1,-1': 3,  // up-left
     '0,-1':  4,  // up
-    '-1,-1': 5,  // up-left
-    '-1,0':  6,  // left
-    '-1,1':  7,  // down-left
+    '1,-1':  5,  // up-right
+    '1,0':   6,  // right
+    '1,1':   7,  // down-right
 };
 
 // Sector center angles for each direction row (in degrees, 0=right clockwise)
-// Row order: 0=down, 1=down-right, 2=right, 3=up-right, 4=up, 5=up-left, 6=left, 7=down-left
-const _dirCenters = [90, 45, 0, 315, 270, 225, 180, 135];
+// Row order (counter-clockwise): 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
+const _dirCenters = [90, 135, 180, 225, 270, 315, 0, 45];
 
 function _angleDist(a, b) {
     let d = Math.abs(a - b) % 360;
