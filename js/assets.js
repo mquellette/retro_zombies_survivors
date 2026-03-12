@@ -62,37 +62,45 @@ function getDirFrame(fx, fy) {
     return 3; // up-right (285-345)
 }
 
-// ── Pre-rendered sprite cache ──
-// Downscales spritesheet frames to target size ONCE at load time,
-// so drawImage() is always 1:1 with no per-frame scaling artifacts.
+// ── Pre-rendered sprite cache (walk animation) ──
+// Stores frames as _grid[direction][frameIndex] for 4×8 spritesheet
 const SpriteCache = {
-    _frames: null, // array of offscreen canvases, one per direction
-    _builtDpr: 0,  // dpr used when cache was built
+    _grid: null,     // [dir][frame] = offscreen canvas
+    _builtDpr: 0,
+    _cols: 4,        // animation frames per direction
+    _rows: 8,        // directions
 
-    build(sheetImg, frameW, frameH, numFrames, targetSize) {
+    build(sheetImg, targetSize) {
         const dpr = window._dpr || 1;
         this._builtDpr = dpr;
         this._targetSize = targetSize;
-        this._frames = [];
-        // Pre-render at native device resolution for crisp sprites
+        this._grid = [];
+        const frameW = sheetImg.width / this._cols;   // 256
+        const frameH = sheetImg.height / this._rows;  // 128
         const renderSize = Math.round(targetSize * dpr);
-        for (let i = 0; i < numFrames; i++) {
-            const c = document.createElement('canvas');
-            c.width = renderSize;
-            c.height = renderSize;
-            const cx = c.getContext('2d');
-            cx.imageSmoothingEnabled = false;
-            cx.drawImage(sheetImg, i * frameW, 0, frameW, frameH, 0, 0, renderSize, renderSize);
-            this._frames.push(c);
+        for (let row = 0; row < this._rows; row++) {
+            this._grid[row] = [];
+            for (let col = 0; col < this._cols; col++) {
+                const c = document.createElement('canvas');
+                c.width = renderSize;
+                c.height = renderSize;
+                const cx = c.getContext('2d');
+                cx.imageSmoothingEnabled = false;
+                cx.drawImage(sheetImg,
+                    col * frameW, row * frameH, frameW, frameH,
+                    0, 0, renderSize, renderSize);
+                this._grid[row].push(c);
+            }
         }
     },
 
-    getFrame(index) {
-        return this._frames ? this._frames[index] : null;
+    getFrame(dir, animFrame) {
+        if (!this._grid) return null;
+        return this._grid[dir] ? this._grid[dir][animFrame % this._cols] : null;
     }
 };
 
 // ── Load all assets ──
-Assets.load('hero', 'Assets/Sprites/Player/hero_spritesheet_final.png');
+Assets.load('hero_walk', 'Assets/Sprites/Player/nb2_walk_sheet_4x8_clean.png');
 Assets.load('skull_icon', 'Assets/UI/HUD/skull_icon Background Removed.png');
 Assets.load('coin_icon', 'Assets/UI/HUD/coin_icon Background Removed.png');

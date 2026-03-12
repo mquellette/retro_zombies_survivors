@@ -55,6 +55,15 @@ const Game = {
             p.y += (my / len) * spd;
             p.facingX = mx;
             p.facingY = my;
+            // Walk animation
+            p.walkTimer = (p.walkTimer || 0) + dt;
+            if (p.walkTimer >= 0.15) {  // ~6.7 FPS walk cycle
+                p.walkTimer -= 0.15;
+                p.walkFrame = ((p.walkFrame || 0) + 1) % 4;
+            }
+        } else {
+            p.walkFrame = 0;
+            p.walkTimer = 0;
         }
         // Clamp to bounds
         p.x = clamp(p.x, p.w / 2, GAME_W - p.w / 2);
@@ -218,22 +227,20 @@ const Game = {
 
         // Player
         const p = this.player;
-        const heroImg = Assets.get('hero');
+        const heroImg = Assets.get('hero_walk');
         if (heroImg) {
             // Build sprite cache at native device resolution (rebuild if dpr changes)
             const dpr = window._dpr || 1;
-            if (!SpriteCache._frames || SpriteCache._builtDpr !== dpr) {
-                SpriteCache.build(heroImg, 128, 128, 8, 48);
+            if (!SpriteCache._grid || SpriteCache._builtDpr !== dpr) {
+                SpriteCache.build(heroImg, 48);
             }
-            const frame = getDirFrame(p.facingX, p.facingY);
-            const cached = SpriteCache.getFrame(frame);
+            const dir = getDirFrame(p.facingX, p.facingY);
+            const animFrame = p.walkFrame || 0;
+            const cached = SpriteCache.getFrame(dir, animFrame);
             const dx = Math.round(p.x - 24);
             const dy = Math.round(p.y - 24);
             if (cached) {
-                // Draw dpr-sized cache into 48×48 game units
                 ctx.drawImage(cached, dx, dy, 48, 48);
-            } else {
-                ctx.drawImage(heroImg, frame * 128, 0, 128, 128, dx, dy, 48, 48);
             }
         } else {
             ctx.fillStyle = COL.player;
