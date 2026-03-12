@@ -27,19 +27,39 @@ const Joystick = {
         this.pointerId = null;
     },
 
+    // Fixed joystick position (always visible bottom-left)
+    baseX: 60,
+    baseY: 0, // set in init based on GAME_H
+
+    initPosition() {
+        this.baseY = GAME_H - 80;
+    },
+
     draw(ctx) {
-        if (!this.active) return;
-        ctx.globalAlpha = 0.25;
+        // Always draw joystick base at fixed position
+        const bx = this.baseX;
+        const by = this.baseY;
+
+        // Outer circle (base)
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = '#aaccaa';
+        ctx.beginPath();
+        ctx.arc(bx, by, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner thumb
+        let tx = bx;
+        let ty = by;
+        if (this.active) {
+            tx = bx + clamp(this.dx, -this.radius, this.radius);
+            ty = by + clamp(this.dy, -this.radius, this.radius);
+        }
+        ctx.globalAlpha = 0.5;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(this.startX, this.startY, this.radius, 0, Math.PI * 2);
+        ctx.arc(tx, ty, 16, 0, Math.PI * 2);
         ctx.fill();
-        const tx = this.startX + clamp(this.dx, -this.radius, this.radius);
-        const ty = this.startY + clamp(this.dy, -this.radius, this.radius);
-        ctx.globalAlpha = 0.5;
-        ctx.beginPath();
-        ctx.arc(tx, ty, 20, 0, Math.PI * 2);
-        ctx.fill();
+
         ctx.globalAlpha = 1;
     }
 };
@@ -63,10 +83,11 @@ const Input = {
             if (!Joystick.active) {
                 Joystick.active = true;
                 Joystick.pointerId = e.pointerId;
-                Joystick.startX = x;
-                Joystick.startY = y;
-                Joystick.dx = 0;
-                Joystick.dy = 0;
+                // Use fixed base position, calculate offset from there
+                Joystick.startX = Joystick.baseX;
+                Joystick.startY = Joystick.baseY;
+                Joystick.dx = x - Joystick.baseX;
+                Joystick.dy = y - Joystick.baseY;
             }
         });
 

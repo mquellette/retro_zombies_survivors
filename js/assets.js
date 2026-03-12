@@ -42,12 +42,27 @@ const DIR_FRAMES = {
 };
 
 function getDirFrame(fx, fy) {
-    // Normalize to -1, 0, 1
-    const sx = fx === 0 ? 0 : (fx > 0 ? 1 : -1);
-    const sy = fy === 0 ? 0 : (fy > 0 ? 1 : -1);
-    const key = sx + ',' + sy;
-    return DIR_FRAMES[key] !== undefined ? DIR_FRAMES[key] : 0;
+    if (fx === 0 && fy === 0) return 0; // idle → down
+    // Angle-based detection with wider cardinal zones (~60° cardinal, ~30° diagonal)
+    const angle = Math.atan2(fy, fx); // radians, 0=right, π/2=down
+    // Convert to degrees 0-360
+    let deg = angle * (180 / Math.PI);
+    if (deg < 0) deg += 360;
+    // Sectors (clockwise from right=0°):
+    // right: 345-15, down-right: 15-75, down: 75-105,
+    // down-left: 105-165, left: 165-195, up-left: 195-255,
+    // up: 255-285, up-right: 285-345
+    if (deg >= 345 || deg < 15)  return 2; // right
+    if (deg >= 15 && deg < 75)   return 1; // down-right
+    if (deg >= 75 && deg < 105)  return 0; // down
+    if (deg >= 105 && deg < 165) return 7; // down-left
+    if (deg >= 165 && deg < 195) return 6; // left
+    if (deg >= 195 && deg < 255) return 5; // up-left
+    if (deg >= 255 && deg < 285) return 4; // up
+    return 3; // up-right (285-345)
 }
 
 // ── Load all assets ──
 Assets.load('hero', 'Assets/Sprites/Player/hero_spritesheet_final.png');
+Assets.load('skull_icon', 'Assets/UI/HUD/skull_icon Background Removed.png');
+Assets.load('coin_icon', 'Assets/UI/HUD/coin_icon Background Removed.png');

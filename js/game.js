@@ -184,11 +184,11 @@ const Game = {
     // ── Draw ──
     draw(ctx) {
         // Background
-        ctx.fillStyle = '#2d1b2e';
+        ctx.fillStyle = '#277553';
         ctx.fillRect(0, 0, GAME_W, GAME_H);
 
         // Ground grid (subtle)
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
         for (let x = 0; x < GAME_W; x += TILE) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GAME_H); ctx.stroke();
         }
@@ -232,12 +232,26 @@ const Game = {
             const frame = getDirFrame(p.facingX, p.facingY);
             const fw = 128; // frame width in spritesheet
             const fh = 128; // frame height
-            const drawSize = 32; // render size in game pixels
+            const drawSize = 48; // render size in game pixels (larger for detail)
+            const dx = Math.round(p.x - drawSize / 2);
+            const dy = Math.round(p.y - drawSize / 2);
             ctx.drawImage(heroImg, frame * fw, 0, fw, fh,
-                p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
+                dx, dy, drawSize, drawSize);
         } else {
             ctx.fillStyle = COL.player;
             ctx.fillRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h);
+        }
+
+        // HP bar under hero
+        if (p.hp < p.maxHp) {
+            const hpBarW = 28;
+            const hpBarH = 3;
+            const hpX = Math.round(p.x - hpBarW / 2);
+            const hpY = Math.round(p.y + 18);
+            ctx.fillStyle = '#440000';
+            ctx.fillRect(hpX, hpY, hpBarW, hpBarH);
+            ctx.fillStyle = '#ff3333';
+            ctx.fillRect(hpX, hpY, hpBarW * (p.hp / p.maxHp), hpBarH);
         }
 
         // Joystick
@@ -254,38 +268,77 @@ const Game = {
 
     _drawHUD(ctx) {
         const p = this.player;
-        const pad = 8;
-        const barW = 120;
-        const barH = 10;
+        const pad = 6;
 
-        // HP bar (top left)
-        ctx.fillStyle = COL.hpBg;
-        ctx.fillRect(pad, pad, barW, barH);
-        ctx.fillStyle = COL.hpBar;
-        ctx.fillRect(pad, pad, barW * (p.hp / p.maxHp), barH);
-        ctx.fillStyle = COL.text;
+        // ── XP Bar (full width, magenta) ──
+        const barY = 4;
+        const barH = 12;
+        const barX = pad;
+        const barW = GAME_W - pad * 2;
+        // Background
+        ctx.fillStyle = '#3a0a3a';
+        ctx.fillRect(barX, barY, barW, barH);
+        // Fill
+        ctx.fillStyle = '#e020e0';
+        const xpFill = Math.min(p.xp / this.xpToNext, 1);
+        ctx.fillRect(barX, barY, barW * xpFill, barH);
+        // Border
+        ctx.strokeStyle = '#8a2be2';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barW, barH);
+        // "LVL X" label right-aligned inside bar
+        ctx.fillStyle = '#ffffff';
         ctx.font = '8px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText(`HP ${p.hp}/${p.maxHp}`, pad, pad + barH + 10);
-
-        // XP bar (below HP)
-        const xpY = pad + barH + 16;
-        ctx.fillStyle = COL.xpBg;
-        ctx.fillRect(pad, xpY, barW, barH);
-        ctx.fillStyle = COL.xpBar;
-        ctx.fillRect(pad, xpY, barW * (p.xp / this.xpToNext), barH);
-        ctx.fillText(`LV ${p.level}  XP ${p.xp}/${this.xpToNext}`, pad, xpY + barH + 10);
-
-        // Timer (top right)
-        const mins = Math.floor(this.timer / 60);
-        const secs = Math.floor(this.timer % 60);
         ctx.textAlign = 'right';
-        ctx.font = '12px monospace';
-        ctx.fillText(`${mins}:${secs.toString().padStart(2, '0')}`, GAME_W - pad, pad + 12);
+        ctx.fillText(`LVL ${p.level}`, barX + barW - 3, barY + barH - 3);
 
-        // Kills
-        ctx.font = '8px monospace';
-        ctx.fillText(`Kills: ${p.kills}`, GAME_W - pad, pad + 24);
+        // ── Second row: ability slots | timer | kill/coin counters ──
+        const rowY = barY + barH + 5;
+
+        // Ability slots (4 gray squares, left side)
+        const slotSize = 18;
+        const slotGap = 3;
+        ctx.fillStyle = '#4a5a4a';
+        for (let i = 0; i < 4; i++) {
+            const sx = pad + i * (slotSize + slotGap);
+            ctx.fillRect(sx, rowY, slotSize, slotSize);
+        }
+
+        // Timer (centered)
+        const elapsed = CONFIG.round.duration - this.timer;
+        const mins = Math.floor(elapsed / 60);
+        const secs = Math.floor(elapsed % 60);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`, GAME_W / 2, rowY + 14);
+
+        // Kill & coin counters (right side, with icons)
+        const iconSize = 12;
+        const counterX = GAME_W - pad;
+
+        // Skull (kills) - top row
+        const skullImg = Assets.get('skull_icon');
+        ctx.textAlign = 'right';
+        ctx.font = '9px monospace';
+        ctx.fillStyle = '#ffffff';
+        if (skullImg) {
+            ctx.drawImage(skullImg, counterX - iconSize, rowY, iconSize, iconSize);
+            ctx.fillText(`${p.kills}`, counterX - iconSize - 3, rowY + 9);
+        } else {
+            ctx.fillText(`☠${p.kills}`, counterX, rowY + 9);
+        }
+
+        // Coin - bottom row
+        const coinImg = Assets.get('coin_icon');
+        const coinY = rowY + iconSize + 2;
+        if (coinImg) {
+            ctx.drawImage(coinImg, counterX - iconSize, coinY, iconSize, iconSize);
+            ctx.fillText(`${p.coins || 0}`, counterX - iconSize - 3, coinY + 9);
+        } else {
+            ctx.fillText(`●${p.coins || 0}`, counterX, coinY + 9);
+        }
+
         ctx.textAlign = 'left';
     },
 

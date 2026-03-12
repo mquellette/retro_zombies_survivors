@@ -30,7 +30,8 @@
     }
 
     resize();
-    window.addEventListener('resize', resize);
+    Joystick.initPosition();
+    window.addEventListener('resize', () => { resize(); Joystick.initPosition(); });
     Input.init(canvas);
 
     // Disable context menu and all default touch behavior
