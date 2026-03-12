@@ -1,14 +1,13 @@
 // ── Bootstrap ──
 (function () {
     // Telegram WebApp: fullscreen + disable swipe close
-    if (window.Telegram && Telegram.WebApp) {
-        try {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-            Telegram.WebApp.isClosingConfirmationEnabled = true;
-        } catch(e) {}
-        try { Telegram.WebApp.disableVerticalSwipes(); } catch(e) {}
-        try { Telegram.WebApp.requestFullscreen(); } catch(e) {}
+    const tg = window.Telegram && Telegram.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.disableVerticalSwipes();
+        tg.isClosingConfirmationEnabled = true;
+        tg.expand();
+        try { tg.requestFullscreen(); } catch(e) {}
     }
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
