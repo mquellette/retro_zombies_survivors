@@ -62,6 +62,30 @@ function getDirFrame(fx, fy) {
     return 3; // up-right (285-345)
 }
 
+// ── Pre-rendered sprite cache ──
+// Downscales spritesheet frames to target size ONCE at load time,
+// so drawImage() is always 1:1 with no per-frame scaling artifacts.
+const SpriteCache = {
+    _frames: null, // array of offscreen canvases, one per direction
+
+    build(sheetImg, frameW, frameH, numFrames, targetSize) {
+        this._frames = [];
+        for (let i = 0; i < numFrames; i++) {
+            const c = document.createElement('canvas');
+            c.width = targetSize;
+            c.height = targetSize;
+            const cx = c.getContext('2d');
+            cx.imageSmoothingEnabled = false;
+            cx.drawImage(sheetImg, i * frameW, 0, frameW, frameH, 0, 0, targetSize, targetSize);
+            this._frames.push(c);
+        }
+    },
+
+    getFrame(index) {
+        return this._frames ? this._frames[index] : null;
+    }
+};
+
 // ── Load all assets ──
 Assets.load('hero', 'Assets/Sprites/Player/hero_spritesheet_final.png');
 Assets.load('skull_icon', 'Assets/UI/HUD/skull_icon Background Removed.png');

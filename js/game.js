@@ -220,14 +220,20 @@ const Game = {
         const p = this.player;
         const heroImg = Assets.get('hero');
         if (heroImg) {
+            // Build sprite cache once
+            if (!SpriteCache._frames) {
+                SpriteCache.build(heroImg, 128, 128, 8, 48);
+            }
             const frame = getDirFrame(p.facingX, p.facingY);
-            const fw = 128; // frame width in spritesheet
-            const fh = 128; // frame height
-            const drawSize = 48; // matches Figma spec
-            const dx = Math.round(p.x - drawSize / 2);
-            const dy = Math.round(p.y - drawSize / 2);
-            ctx.drawImage(heroImg, frame * fw, 0, fw, fh,
-                dx, dy, drawSize, drawSize);
+            const cached = SpriteCache.getFrame(frame);
+            const dx = Math.round(p.x - 24);
+            const dy = Math.round(p.y - 24);
+            if (cached) {
+                // Draw pre-rendered 48×48 frame at 1:1 — no scaling
+                ctx.drawImage(cached, dx, dy);
+            } else {
+                ctx.drawImage(heroImg, frame * 128, 0, 128, 128, dx, dy, 48, 48);
+            }
         } else {
             ctx.fillStyle = COL.player;
             ctx.fillRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h);
