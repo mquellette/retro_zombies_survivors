@@ -56,10 +56,12 @@ const Game = {
             p.y += (my / len) * spd;
             p.facingX = mx;
             p.facingY = my;
-            // Walk animation
+            // Walk animation — speed tied to movement speed
+            const moveSpeed = (p.speed * p.speedMul * len);
+            const stepInterval = moveSpeed > 0 ? Math.max(0.06, 8 / moveSpeed) : 0.15;
             p.walkTimer = (p.walkTimer || 0) + dt;
-            if (p.walkTimer >= 0.15) {  // ~6.7 FPS walk cycle
-                p.walkTimer -= 0.15;
+            if (p.walkTimer >= stepInterval) {
+                p.walkTimer -= stepInterval;
                 p.walkFrame = ((p.walkFrame || 0) + 1) % 4;
             }
         } else {
@@ -129,9 +131,10 @@ const Game = {
                 e.facingX = mx;
                 e.facingY = my;
             }
+            const enemyStepInterval = e.speed > 0 ? Math.max(0.06, 8 / e.speed) : 0.15;
             e.walkTimer = (e.walkTimer || 0) + dt;
-            if (e.walkTimer >= 0.15) {
-                e.walkTimer -= 0.15;
+            if (e.walkTimer >= enemyStepInterval) {
+                e.walkTimer -= enemyStepInterval;
                 e.walkFrame = ((e.walkFrame || 0) + 1) % 4;
             }
 

@@ -45,21 +45,18 @@ function getDirFrame(fx, fy) {
     if (fx === 0 && fy === 0) return 0; // idle → down
     // Angle-based detection with wider cardinal zones (~60° cardinal, ~30° diagonal)
     const angle = Math.atan2(fy, fx); // radians, 0=right, π/2=down
-    // Convert to degrees 0-360
     let deg = angle * (180 / Math.PI);
     if (deg < 0) deg += 360;
-    // Sectors (clockwise from right=0°):
-    // right: 345-15, down-right: 15-75, down: 75-105,
-    // down-left: 105-165, left: 165-195, up-left: 195-255,
-    // up: 255-285, up-right: 285-345
-    if (deg >= 345 || deg < 15)  return 2; // right
-    if (deg >= 15 && deg < 75)   return 1; // down-right
+    // Spritesheet row order (counter-clockwise):
+    // 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
+    if (deg >= 345 || deg < 15)  return 6; // right
+    if (deg >= 15 && deg < 75)   return 7; // down-right
     if (deg >= 75 && deg < 105)  return 0; // down
-    if (deg >= 105 && deg < 165) return 7; // down-left
-    if (deg >= 165 && deg < 195) return 6; // left
-    if (deg >= 195 && deg < 255) return 5; // up-left
+    if (deg >= 105 && deg < 165) return 1; // down-left
+    if (deg >= 165 && deg < 195) return 2; // left
+    if (deg >= 195 && deg < 255) return 3; // up-left
     if (deg >= 255 && deg < 285) return 4; // up
-    return 3; // up-right (285-345)
+    return 5; // up-right (285-345)
 }
 
 // ── Pre-rendered sprite cache (walk animation) ──
@@ -121,8 +118,14 @@ const SpriteCache = {
                 c.height = renderH;
                 const cx = c.getContext('2d');
                 cx.imageSmoothingEnabled = false;
+                // Inset by 1px to avoid bleeding pixels from adjacent cells
+                const pad = 1;
+                const sx = col * cellW + pad;
+                const sy = row * cellH + pad;
+                const sw = cellW - pad * 2;
+                const sh = cellH - pad * 2;
                 cx.drawImage(sheetImg,
-                    col * cellW, row * cellH, cellW, cellH,
+                    sx, sy, sw, sh,
                     0, 0, renderW, renderH);
                 this._grid[row].push({ canvas: c, anchorX: anchorGameX });
             }
