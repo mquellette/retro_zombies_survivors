@@ -4,7 +4,7 @@ const Game = {
     bullets: [],
     enemies: [],
     gems: [],
-    timer: 180,          // 3 minutes
+    timer: 180,
     paused: false,
     state: 'playing',    // playing | levelup | gameover | victory
 
@@ -21,10 +21,10 @@ const Game = {
         this.bullets = [];
         this.enemies = [];
         this.gems = [];
-        this.timer = 180;
+        this.timer = CONFIG.round.duration;
         this.paused = false;
         this.state = 'playing';
-        this.xpToNext = 5;
+        this.xpToNext = CONFIG.leveling.baseXp;
         Spawner.reset();
     },
 
@@ -91,6 +91,11 @@ const Game = {
                     if (this.enemies[j].hp <= 0) {
                         const e = this.enemies[j];
                         this.gems.push(createGem(e.x, e.y, e.xp));
+                        // Chest drop chance
+                        if (Math.random() < CONFIG.loot.chestDropChance) {
+                            const heal = rndInt(CONFIG.loot.chestHealMin, CONFIG.loot.chestHealMax);
+                            p.hp = Math.min(p.hp + heal, p.maxHp);
+                        }
                         this.enemies.splice(j, 1);
                         p.kills++;
                     }
@@ -122,7 +127,7 @@ const Game = {
         }
 
         // ── XP Gems ──
-        const magnetRange = 40;
+        const magnetRange = CONFIG.player.magnetRange;
         for (let i = this.gems.length - 1; i >= 0; i--) {
             const g = this.gems[i];
             const d = dist(g, p);
@@ -142,7 +147,7 @@ const Game = {
                 if (p.xp >= this.xpToNext) {
                     p.xp -= this.xpToNext;
                     p.level++;
-                    this.xpToNext = 5 + (p.level - 1) * 5;
+                    this.xpToNext = CONFIG.leveling.baseXp + (p.level - 1) * CONFIG.leveling.xpPerLevel;
                     this._triggerLevelUp();
                 }
             }
@@ -164,15 +169,7 @@ const Game = {
 
     _triggerLevelUp() {
         this.state = 'levelup';
-        const allUpgrades = [
-            { name: 'Max HP +20',    icon: '♥', apply(p) { p.maxHp += 20; p.hp = Math.min(p.hp + 20, p.maxHp); } },
-            { name: 'ATK Speed +15%', icon: '⚡', apply(p) { p.atkSpeedMul += 0.15; } },
-            { name: 'Damage +20%',    icon: '🗡', apply(p) { p.damageMul += 0.2; } },
-            { name: 'Move Speed +10%',icon: '👟', apply(p) { p.speedMul += 0.1; } },
-            { name: 'Heal 30 HP',     icon: '✚', apply(p) { p.hp = Math.min(p.hp + 30, p.maxHp); } },
-        ];
-        // Pick 3 random
-        const shuffled = allUpgrades.sort(() => Math.random() - 0.5);
+        const shuffled = CONFIG.upgrades.slice().sort(() => Math.random() - 0.5);
         this.levelUpChoices = shuffled.slice(0, 3);
     },
 
@@ -230,8 +227,18 @@ const Game = {
 
         // Player
         const p = this.player;
-        ctx.fillStyle = COL.player;
-        ctx.fillRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h);
+        const heroImg = Assets.get('hero');
+        if (heroImg) {
+            const frame = getDirFrame(p.facingX, p.facingY);
+            const fw = 128; // frame width in spritesheet
+            const fh = 128; // frame height
+            const drawSize = 32; // render size in game pixels
+            ctx.drawImage(heroImg, frame * fw, 0, fw, fh,
+                p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
+        } else {
+            ctx.fillStyle = COL.player;
+            ctx.fillRect(p.x - p.w / 2, p.y - p.h / 2, p.w, p.h);
+        }
 
         // Joystick
         Joystick.draw(ctx);
@@ -327,8 +334,9 @@ const Game = {
 
         ctx.fillStyle = COL.text;
         ctx.font = '10px monospace';
-        const mins = Math.floor((180 - this.timer) / 60);
-        const secs = Math.floor((180 - this.timer) % 60);
+        const elapsed = CONFIG.round.duration - this.timer;
+        const mins = Math.floor(elapsed / 60);
+        const secs = Math.floor(elapsed % 60);
         ctx.fillText(`Time: ${mins}:${secs.toString().padStart(2, '0')}`, GAME_W / 2, 250);
         ctx.fillText(`Kills: ${p.kills}`, GAME_W / 2, 270);
         ctx.fillText(`Level: ${p.level}`, GAME_W / 2, 290);

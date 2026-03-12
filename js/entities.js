@@ -1,26 +1,24 @@
 // ── Player ──
 function createPlayer() {
+    const c = CONFIG.player;
     return {
         x: GAME_W / 2,
         y: GAME_H / 2,
         w: 16,
         h: 16,
-        speed: 2 * TILE,       // 2 tiles/sec → pixels/sec
-        hp: 100,
-        maxHp: 100,
+        speed: c.speed * TILE,
+        hp: c.hp,
+        maxHp: c.hp,
         xp: 0,
         level: 1,
         kills: 0,
-        // Attack
-        atkDamage: 10,
-        atkSpeed: 1,            // shots per second
+        atkDamage: c.atkDamage,
+        atkSpeed: c.atkSpeed,
         atkTimer: 0,
-        atkRange: 120,
-        // Upgrades
+        atkRange: c.atkRange,
         speedMul: 1,
         damageMul: 1,
         atkSpeedMul: 1,
-        // Direction for rendering
         facingX: 0,
         facingY: 1,
     };
@@ -28,37 +26,45 @@ function createPlayer() {
 
 // ── Bullet ──
 function createBullet(x, y, tx, ty, damage) {
+    const spd = CONFIG.player.bulletSpeed;
     const dx = tx - x;
     const dy = ty - y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     return {
         x, y,
         w: 6, h: 6,
-        vx: (dx / len) * 200,
-        vy: (dy / len) * 200,
+        vx: (dx / len) * spd,
+        vy: (dy / len) * spd,
         damage,
-        life: 2, // seconds
+        life: 2,
     };
 }
 
 // ── Enemy ──
-function createEnemy(x, y, type) {
-    const defs = {
-        zombie: { w: 16, h: 16, speed: 1 * TILE, hp: 20, damage: 5, xp: 1, color: COL.enemy },
-        fast:   { w: 14, h: 14, speed: 1.8 * TILE, hp: 12, damage: 3, xp: 1, color: '#ff88ff' },
-        big:    { w: 24, h: 24, speed: 0.6 * TILE, hp: 60, damage: 10, xp: 3, color: COL.enemyBig },
-    };
-    const d = defs[type] || defs.zombie;
+const ENEMY_COLORS = {
+    zombie: COL.enemy,
+    fast: '#ff88ff',
+    big: COL.enemyBig,
+};
+
+function createEnemy(x, y, type, elite) {
+    const c = CONFIG.enemies[type] || CONFIG.enemies.zombie;
+    const s = CONFIG.spawner;
+    const isElite = elite || false;
+    const hpMul = isElite ? 2 : 1;
+    const dmgMul = isElite ? 1.5 : 1;
+    const xpMul = isElite ? 2 : 1;
     return {
         x, y,
-        w: d.w, h: d.h,
-        speed: d.speed,
-        hp: d.hp,
-        maxHp: d.hp,
-        damage: d.damage,
-        xp: d.xp,
-        color: d.color,
+        w: c.size, h: c.size,
+        speed: c.speed * TILE,
+        hp: c.hp * hpMul,
+        maxHp: c.hp * hpMul,
+        damage: c.damage * dmgMul,
+        xp: c.xp * xpMul,
+        color: ENEMY_COLORS[type] || COL.enemy,
         type,
+        elite: isElite,
         hitCooldown: 0,
     };
 }
@@ -76,33 +82,32 @@ function createGem(x, y, value) {
 // ── Spawn logic ──
 const Spawner = {
     timer: 0,
-    interval: 2,        // seconds between spawns
+    interval: 2,
     perSpawn: 1,
     elapsed: 0,
 
     update(dt, enemies, player) {
+        const s = CONFIG.spawner;
         this.elapsed += dt;
         this.timer -= dt;
 
-        // Ramp difficulty every 30 seconds
-        this.perSpawn = 1 + Math.floor(this.elapsed / 30);
-        this.interval = Math.max(0.5, 2 - this.elapsed * 0.008);
+        this.perSpawn = 1 + Math.floor(this.elapsed / s.rampEvery);
+        this.interval = Math.max(s.minInterval, s.startInterval - this.elapsed * s.intervalDecay);
 
         if (this.timer <= 0) {
             this.timer = this.interval;
             for (let i = 0; i < this.perSpawn; i++) {
                 const pos = this._spawnPos(player);
-                // Mix enemy types after some time
                 let type = 'zombie';
-                if (this.elapsed > 60 && Math.random() < 0.2) type = 'fast';
-                if (this.elapsed > 90 && Math.random() < 0.1) type = 'big';
-                enemies.push(createEnemy(pos.x, pos.y, type));
+                if (this.elapsed > s.fastSpawnAfter && Math.random() < s.fastSpawnChance) type = 'fast';
+                if (this.elapsed > s.bigSpawnAfter && Math.random() < s.bigSpawnChance) type = 'big';
+                const elite = Math.random() < s.eliteChance;
+                enemies.push(createEnemy(pos.x, pos.y, type, elite));
             }
         }
     },
 
     _spawnPos(player) {
-        // Spawn outside visible area but not too far
         const margin = 40;
         const side = rndInt(0, 3);
         let x, y;
@@ -117,7 +122,7 @@ const Spawner = {
 
     reset() {
         this.timer = 0;
-        this.interval = 2;
+        this.interval = CONFIG.spawner.startInterval;
         this.perSpawn = 1;
         this.elapsed = 0;
     }

@@ -50,6 +50,7 @@
         // Scale canvas to game coordinates
         ctx.save();
         ctx.scale(scale, scale);
+        ctx.imageSmoothingEnabled = false;
 
         // Handle taps for current screen
         const tap = Input.consumeTap();

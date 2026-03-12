@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { color: #00ff88; margin-bottom: 20px; font-size: 22px; }
+        h2 {
+            color: #ff88ff;
+            margin: 24px 0 12px;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 6px;
+        }
+        .section {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+        .row label {
+            flex: 1;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .row input {
+            width: 100px;
+            padding: 6px 8px;
+            background: #0f3460;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+            text-align: right;
+        }
+        .row input:focus { outline: none; border-color: #00ff88; }
+        .row input.changed { border-color: #ffaa00; background: #1a3a20; }
+        .hint {
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+            width: 120px;
+        }
+        .actions {
+            position: sticky;
+            bottom: 0;
+            background: #1a1a2e;
+            padding: 16px 0;
+            display: flex;
+            gap: 12px;
+            border-top: 2px solid #333;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-export { background: #00ff88; color: #000; }
+        .btn-export:hover { background: #00cc6a; }
+        .btn-preview { background: #6c5ce7; color: #fff; }
+        .btn-preview:hover { background: #5a4bd1; }
+        .btn-reset { background: #444; color: #fff; }
+        .btn-reset:hover { background: #555; }
+        .btn-defaults { background: #ff4444; color: #fff; }
+        .btn-defaults:hover { background: #cc3333; }
+        .changes-count {
+            color: #ffaa00;
+            font-size: 13px;
+            margin-left: auto;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff88;
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+        }
+        .enemy-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .enemy-tab {
+            padding: 6px 14px;
+            background: #0f3460;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .enemy-tab.active { background: #1a3a60; border-color: #ff88ff; color: #fff; }
+        .enemy-panel { display: none; }
+        .enemy-panel.active { display: block; }
+
+        /* Confirm dialog */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 600;
+            justify-content: center;
+            align-items: center;
+        }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box {
+            background: #16213e;
+            border: 1px solid #ff4444;
+            border-radius: 10px;
+            padding: 24px 32px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .confirm-box p {
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .confirm-box .confirm-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .btn-yes { background: #ff4444; color: #fff; }
+        .btn-yes:hover { background: #cc3333; }
+        .btn-no { background: #444; color: #fff; }
+        .btn-no:hover { background: #555; }
+
+        /* Preview modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 500;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #16213e;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1100px;
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid #333;
+            gap: 12px;
+        }
+        .modal-header h2 {
+            margin: 0; border: 0; padding: 0; flex: 1;
+            color: #6c5ce7;
+        }
+        .btn-close {
+            background: #ff4444;
+            color: #fff;
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .preview-sidebar {
+            width: 280px;
+            padding: 16px;
+            overflow-y: auto;
+            border-right: 1px solid #333;
+            flex-shrink: 0;
+        }
+        .preview-sidebar h3 {
+            color: #ffaa00;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        .diff-line {
+            font-size: 12px;
+            font-family: monospace;
+            padding: 4px 8px;
+            margin-bottom: 4px;
+            border-radius: 3px;
+            background: #0f3460;
+        }
+        .diff-key { color: #aaa; }
+        .diff-old { color: #ff6b6b; text-decoration: line-through; font-size: 11px; }
+        .diff-new { color: #00ff88; font-weight: bold; }
+        .diff-arrow { color: #666; margin: 0 4px; }
+        .no-changes {
+            color: #666;
+            font-size: 12px;
+            font-style: italic;
+        }
+        .preview-frame-wrap {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            padding: 10px;
+        }
+        .preview-frame-wrap iframe {
+            border: 2px solid #333;
+            border-radius: 8px;
+            width: 360px;
+            height: 700px;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Config Admin</h1>
+    <div id="app"></div>
+    <div class="actions">
+        <button class="btn-preview" onclick="openPreview()">Open Preview</button>
+        <button class="btn-export" onclick="exportChanges()">Copy Changes for Claude</button>
+        <button class="btn-reset" onclick="resetAll()">Reset All</button>
+        <button class="btn-defaults" onclick="confirmDefaults()">Reset to Defaults</button>
+        <span class="changes-count" id="changesCount"></span>
+    </div>
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <!-- Confirm Dialog -->
+    <div class="confirm-overlay" id="confirmDialog">
+        <div class="confirm-box">
+            <p>Reset ALL values to original defaults?<br>This will discard your current live config values.</p>
+            <div class="confirm-btns">
+                <button class="btn-yes" onclick="applyDefaults()">Yes</button>
+                <button class="btn-no" onclick="closeConfirm()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Game Preview</h2>
+                <span style="color:#aaa;font-size:12px">Testing with modified config</span>
+                <button class="btn-close" onclick="closePreview()">Close</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-sidebar">
+                    <h3>Changes Applied</h3>
+                    <div id="diffList"></div>
+                </div>
+                <div class="preview-frame-wrap">
+                    <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load actual game config to get live values -->
+    <script src="js/utils.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+    // Build DEFAULTS from live CONFIG
+    const FIELD_META = {
+        player: {
+            hp: { label: 'HP', hint: 'Starting health' },
+            speed: { label: 'Speed', hint: 'tiles/sec' },
+            atkDamage: { label: 'Attack Damage', hint: 'per bullet' },
+            atkSpeed: { label: 'Attack Speed', hint: 'shots/sec' },
+            atkRange: { label: 'Attack Range', hint: 'pixels' },
+            bulletSpeed: { label: 'Bullet Speed', hint: 'px/sec' },
+            magnetRange: { label: 'Magnet Range', hint: 'XP pickup px' },
+        },
+        enemies: {
+            zombie: {
+                hp: { label: 'HP', hint: '' },
+                speed: { label: 'Speed', hint: 'tiles/sec' },
+                damage: { label: 'Damage', hint: 'on contact' },
+                xp: { label: 'XP Drop', hint: '' },
+                size: { label: 'Size', hint: 'px' },
+            },
+            fast: {
+                hp: { label: 'HP', hint: '' },
+                speed: { label: 'Speed', hint: 'tiles/sec' },
+                damage: { label: 'Damage', hint: '' },
+                xp: { label: 'XP Drop', hint: '' },
+                size: { label: 'Size', hint: 'px' },
+            },
+            big: {
+                hp: { label: 'HP', hint: '' },
+                speed: { label: 'Speed', hint: 'tiles/sec' },
+                damage: { label: 'Damage', hint: '' },
+                xp: { label: 'XP Drop', hint: '' },
+                size: { label: 'Size', hint: 'px' },
+            },
+        },
+        spawner: {
+            startInterval: { label: 'Start Interval', hint: 'sec between spawns' },
+            minInterval: { label: 'Min Interval', hint: 'fastest spawn rate' },
+            intervalDecay: { label: 'Interval Decay', hint: 'per second' },
+            rampEvery: { label: 'Ramp Every', hint: 'sec to +1 enemy' },
+            fastSpawnAfter: { label: 'Fast After', hint: 'sec' },
+            fastSpawnChance: { label: 'Fast Chance', hint: '0-1' },
+            bigSpawnAfter: { label: 'Big After', hint: 'sec' },
+            bigSpawnChance: { label: 'Big Chance', hint: '0-1' },
+            eliteChance: { label: 'Elite Chance', hint: '0-1' },
+        },
+        loot: {
+            chestDropChance: { label: 'Chest Drop Chance', hint: '0-1' },
+            chestHealMin: { label: 'Chest Heal Min', hint: 'HP' },
+            chestHealMax: { label: 'Chest Heal Max', hint: 'HP' },
+        },
+        leveling: {
+            baseXp: { label: 'Base XP', hint: 'for level 2' },
+            xpPerLevel: { label: 'XP Per Level', hint: 'additional each lv' },
+        },
+        round: {
+            duration: { label: 'Round Duration', hint: 'seconds' },
+        },
+    };
+
+    // Current & original values (flat: "player.hp" => number)
+    const current = {};
+    const original = {};
+
+    function init() {
+        // Read live CONFIG values
+        for (const [section, fields] of Object.entries(FIELD_META)) {
+            if (section === 'enemies') continue;
+            for (const key of Object.keys(fields)) {
+                const id = `${section}.${key}`;
+                const val = CONFIG[section][key];
+                current[id] = val;
+                original[id] = val;
+            }
+        }
+        for (const [type, fields] of Object.entries(FIELD_META.enemies)) {
+            for (const key of Object.keys(fields)) {
+                const id = `enemies.${type}.${key}`;
+                const val = CONFIG.enemies[type][key];
+                current[id] = val;
+                original[id] = val;
+            }
+        }
+        render();
+    }
+
+    function makeRow(id, meta) {
+        return `<div class="row">
+            <label>${meta.label}</label>
+            <input type="number" step="any" id="${id}" value="${current[id]}" onchange="onChange('${id}', this)">
+            <span class="hint">${meta.hint}</span>
+        </div>`;
+    }
+
+    function render() {
+        const app = document.getElementById('app');
+        let html = '';
+
+        html += '<h2>Player</h2><div class="section">';
+        for (const [key, meta] of Object.entries(FIELD_META.player)) {
+            html += makeRow(`player.${key}`, meta);
+        }
+        html += '</div>';
+
+        html += '<h2>Enemies</h2><div class="section">';
+        html += '<div class="enemy-tabs">';
+        const types = Object.keys(FIELD_META.enemies);
+        types.forEach((t, i) => {
+            html += `<div class="enemy-tab ${i===0?'active':''}" onclick="switchTab('${t}', this)">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`;
+        });
+        html += '</div>';
+        types.forEach((type, i) => {
+            html += `<div class="enemy-panel ${i===0?'active':''}" id="panel-${type}">`;
+            for (const [key, meta] of Object.entries(FIELD_META.enemies[type])) {
+                html += makeRow(`enemies.${type}.${key}`, meta);
+            }
+            html += '</div>';
+        });
+        html += '</div>';
+
+        html += '<h2>Spawner</h2><div class="section">';
+        for (const [key, meta] of Object.entries(FIELD_META.spawner)) {
+            html += makeRow(`spawner.${key}`, meta);
+        }
+        html += '</div>';
+
+        html += '<h2>Loot</h2><div class="section">';
+        for (const [key, meta] of Object.entries(FIELD_META.loot)) {
+            html += makeRow(`loot.${key}`, meta);
+        }
+        html += '</div>';
+
+        html += '<h2>Leveling</h2><div class="section">';
+        for (const [key, meta] of Object.entries(FIELD_META.leveling)) {
+            html += makeRow(`leveling.${key}`, meta);
+        }
+        html += '</div>';
+
+        html += '<h2>Round</h2><div class="section">';
+        for (const [key, meta] of Object.entries(FIELD_META.round)) {
+            html += makeRow(`round.${key}`, meta);
+        }
+        html += '</div>';
+
+        app.innerHTML = html;
+        updateCount();
+    }
+
+    function switchTab(type, el) {
+        document.querySelectorAll('.enemy-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.enemy-panel').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('panel-' + type).classList.add('active');
+    }
+
+    function onChange(id, input) {
+        const val = parseFloat(input.value);
+        if (isNaN(val)) return;
+        current[id] = val;
+        input.classList.toggle('changed', val !== original[id]);
+        updateCount();
+    }
+
+    function getChanges() {
+        const changes = {};
+        for (const [id, val] of Object.entries(current)) {
+            if (val !== original[id]) changes[id] = val;
+        }
+        return changes;
+    }
+
+    function updateCount() {
+        const changes = Object.keys(current).filter(k => current[k] !== original[k]);
+        const el = document.getElementById('changesCount');
+        el.textContent = changes.length > 0 ? `${changes.length} change${changes.length > 1 ? 's' : ''}` : '';
+    }
+
+    // ── Preview ──
+    function buildOverrideScript() {
+        // Build a script that patches CONFIG right after config.js loads
+        let lines = [];
+        for (const [id, val] of Object.entries(current)) {
+            const parts = id.split('.');
+            if (parts.length === 2) {
+                lines.push(`CONFIG.${parts[0]}.${parts[1]} = ${val};`);
+            } else if (parts.length === 3) {
+                lines.push(`CONFIG.${parts[0]}.${parts[1]}.${parts[2]} = ${val};`);
+            }
+        }
+        return lines.join('\n');
+    }
+
+    function openPreview() {
+        const modal = document.getElementById('previewModal');
+        const diffList = document.getElementById('diffList');
+        const changes = getChanges();
+
+        // Render diff sidebar
+        if (Object.keys(changes).length === 0) {
+            diffList.innerHTML = '<div class="no-changes">No changes — using live config</div>';
+        } else {
+            let html = '';
+            for (const [path, val] of Object.entries(changes)) {
+                html += `<div class="diff-line">
+                    <span class="diff-key">${path}</span><br>
+                    <span class="diff-old">${original[path]}</span>
+                    <span class="diff-arrow">&rarr;</span>
+                    <span class="diff-new">${val}</span>
+                </div>`;
+            }
+            diffList.innerHTML = html;
+        }
+
+        modal.classList.add('open');
+
+        // Build game HTML with config override injected between config.js and other scripts
+        const overrideScript = buildOverrideScript();
+        const srcdoc = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden; background: #000;
+            touch-action: none; -webkit-user-select: none; user-select: none;
+        }
+        canvas { display: block; margin: 0 auto; touch-action: none; }
+    </style>
+</head>
+<body>
+    <canvas id="game"></canvas>
+    <script src="/js/utils.js"><\/script>
+    <script src="/js/config.js"><\/script>
+    <script src="/js/assets.js"><\/script>
+    <script>
+    // ── Admin config overrides ──
+    ${overrideScript}
+    <\/script>
+    <script src="/js/input.js"><\/script>
+    <script src="/js/entities.js"><\/script>
+    <script src="/js/game.js"><\/script>
+    <script src="/js/screens.js"><\/script>
+    <script src="/js/main.js"><\/script>
+</body>
+</html>`;
+
+        const frame = document.getElementById('previewFrame');
+        frame.srcdoc = srcdoc;
+    }
+
+    function closePreview() {
+        const modal = document.getElementById('previewModal');
+        const frame = document.getElementById('previewFrame');
+        frame.src = '';
+        modal.classList.remove('open');
+    }
+
+    function exportChanges() {
+        const changes = getChanges();
+        if (Object.keys(changes).length === 0) {
+            showToast('No changes to export');
+            return;
+        }
+        let text = 'Please update the following values in js/config.js:\n\n';
+        for (const [path, val] of Object.entries(changes)) {
+            text += `CONFIG.${path} = ${val}  (was ${original[path]})\n`;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('Copied to clipboard!');
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Copied to clipboard!');
+        });
+    }
+
+    function resetAll() {
+        for (const id of Object.keys(current)) current[id] = original[id];
+        render();
+    }
+
+    // ── Reset to Defaults ──
+    const HARD_DEFAULTS = {
+        'player.hp': 100, 'player.speed': 2, 'player.atkDamage': 10,
+        'player.atkSpeed': 1, 'player.atkRange': 120, 'player.bulletSpeed': 200,
+        'player.magnetRange': 40,
+        'enemies.zombie.hp': 20, 'enemies.zombie.speed': 1, 'enemies.zombie.damage': 5,
+        'enemies.zombie.xp': 1, 'enemies.zombie.size': 16,
+        'enemies.fast.hp': 12, 'enemies.fast.speed': 1.8, 'enemies.fast.damage': 3,
+        'enemies.fast.xp': 1, 'enemies.fast.size': 14,
+        'enemies.big.hp': 60, 'enemies.big.speed': 0.6, 'enemies.big.damage': 10,
+        'enemies.big.xp': 3, 'enemies.big.size': 24,
+        'spawner.startInterval': 2, 'spawner.minInterval': 0.5, 'spawner.intervalDecay': 0.008,
+        'spawner.rampEvery': 30, 'spawner.fastSpawnAfter': 60, 'spawner.fastSpawnChance': 0.2,
+        'spawner.bigSpawnAfter': 90, 'spawner.bigSpawnChance': 0.1, 'spawner.eliteChance': 0.05,
+        'loot.chestDropChance': 0.08, 'loot.chestHealMin': 10, 'loot.chestHealMax': 30,
+        'leveling.baseXp': 5, 'leveling.xpPerLevel': 5,
+        'round.duration': 180,
+    };
+
+    function confirmDefaults() {
+        document.getElementById('confirmDialog').classList.add('open');
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirmDialog').classList.remove('open');
+    }
+
+    function applyDefaults() {
+        for (const [id, val] of Object.entries(HARD_DEFAULTS)) {
+            if (id in current) current[id] = val;
+        }
+        closeConfirm();
+        render();
+        showToast('Reset to defaults');
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
+    }
+
+    init();
+    </script>
+</body>
+</html>
