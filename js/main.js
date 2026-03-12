@@ -1,5 +1,10 @@
 // ── Bootstrap ──
 (function () {
+    // Telegram WebApp: expand to full screen
+    if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.expand();
+        Telegram.WebApp.ready();
+    }
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 

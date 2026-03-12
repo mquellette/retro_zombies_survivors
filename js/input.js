@@ -121,6 +121,14 @@ const Input = {
             mouseDown = false;
             Joystick.reset();
         });
+
+        // Click fallback (works in Telegram WebView where touch may not fire)
+        canvas.addEventListener('click', (e) => {
+            const { x, y } = this._toGame(e.clientX, e.clientY);
+            this.tapX = x;
+            this.tapY = y;
+            this.tapped = true;
+        });
     },
 
     _toGame(clientX, clientY) {
