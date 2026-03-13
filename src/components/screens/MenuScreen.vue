@@ -1,8 +1,5 @@
 <template>
   <div class="menu-screen">
-    <div class="menu-bg">
-      <img class="menu-spiral" src="/Assets/UI/Screens/spiral.svg" alt="">
-    </div>
     <img class="menu-logo" src="/Assets/UI/Screens/logo.png" alt="">
     <div class="menu-buttons">
       <button class="menu-btn story" @click="$emit('play')">Сюжетный режим</button>
@@ -20,29 +17,8 @@ defineEmits(['play'])
 .menu-screen {
   position: absolute;
   inset: 0;
-  background: #000;
   pointer-events: auto;
   overflow: hidden;
-}
-
-.menu-bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.menu-spiral {
-  position: absolute;
-  left: -226px;
-  top: -537px;
-  width: 799px;
-  height: 799px;
-  animation: spin 15s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .menu-logo {

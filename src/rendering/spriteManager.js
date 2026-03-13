@@ -4,7 +4,7 @@ import { DIR_NAMES } from '../direction.js'
 // Hero textures: heroTextures[dirIndex] = Texture
 let heroTextures = null
 
-// Zombie textures: zombieTextures[dirIndex] = Texture
+// Zombie textures: zombieTextures[gender][dirIndex] = Texture
 let zombieTextures = null
 
 export function buildHeroTextures() {
@@ -19,11 +19,13 @@ export function buildHeroTextures() {
 
 export function buildZombieTextures() {
   if (zombieTextures) return
-  zombieTextures = []
-  for (let i = 0; i < DIR_NAMES.length; i++) {
-    const alias = `zombie_${DIR_NAMES[i]}`
-    const tex = Assets.get(alias)
-    zombieTextures[i] = tex || null
+  zombieTextures = { male: [], female: [] }
+  for (const gender of ['male', 'female']) {
+    for (let i = 0; i < DIR_NAMES.length; i++) {
+      const alias = `zombie_${gender}_${DIR_NAMES[i]}`
+      const tex = Assets.get(alias)
+      zombieTextures[gender][i] = tex || null
+    }
   }
 }
 
@@ -37,19 +39,22 @@ export function getHeroTexture(dir) {
 }
 
 /**
- * Get zombie texture for a direction
+ * Get zombie texture for a direction and gender
  * @param {number} dir - Direction index (0-7)
+ * @param {string} gender - 'male' or 'female'
  */
-export function getZombieTexture(dir) {
+export function getZombieTexture(dir, gender) {
   if (!zombieTextures) buildZombieTextures()
   if (!zombieTextures) return null
-  return zombieTextures[dir] || zombieTextures[0] || null
+  const g = gender || 'male'
+  const texArr = zombieTextures[g] || zombieTextures.male
+  return texArr[dir] || texArr[0] || null
 }
 
 export function getZombieCellSize() {
-  if (!zombieTextures || !zombieTextures[0]) return { w: 32, h: 32 }
+  if (!zombieTextures || !zombieTextures.male || !zombieTextures.male[0]) return { w: 32, h: 32 }
   return {
-    w: zombieTextures[0].width,
-    h: zombieTextures[0].height,
+    w: zombieTextures.male[0].width,
+    h: zombieTextures.male[0].height,
   }
 }

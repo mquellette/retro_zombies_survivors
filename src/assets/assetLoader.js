@@ -24,18 +24,21 @@ export async function loadAssets() {
     toLoad.push(alias)
   }
 
-  // Zombie direction sprites
-  for (const dir of DIR_NAMES) {
-    const alias = `zombie_${dir}`
-    const file = HERO_FILES[dir] // same naming convention
-    Assets.add({ alias, src: `Assets/Final Assests/Enemies/zombie-male-adult/${file}` })
-    toLoad.push(alias)
+  // Zombie direction sprites (male + female)
+  for (const gender of ['male', 'female']) {
+    for (const dir of DIR_NAMES) {
+      const alias = `zombie_${gender}_${dir}`
+      const file = HERO_FILES[dir]
+      Assets.add({ alias, src: `Assets/Final Assests/Enemies/zombie-${gender}-adult/${file}` })
+      toLoad.push(alias)
+    }
   }
 
-  // UI
-  Assets.add({ alias: 'skull_icon', src: 'Assets/UI/HUD/skull_icon Background Removed.png' })
-  Assets.add({ alias: 'coin_icon', src: 'Assets/UI/HUD/coin_icon Background Removed.png' })
-  toLoad.push('skull_icon', 'coin_icon')
+  // UI — HUD icons
+  Assets.add({ alias: 'skull_icon', src: 'Assets/UI/Icons/Stats/ic-stats-skull.png' })
+  Assets.add({ alias: 'coin_icon', src: 'Assets/UI/Icons/Stats/ic-currency-disk.png' })
+  Assets.add({ alias: 'xp_icon', src: 'Assets/UI/Icons/Collectibles/ic-collectibles-experience.png' })
+  toLoad.push('skull_icon', 'coin_icon', 'xp_icon')
 
   // Weapon icons
   const weaponIcons = [

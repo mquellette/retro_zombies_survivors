@@ -1,9 +1,5 @@
 <template>
   <div class="levels-screen">
-    <div class="bg-wrap">
-      <img class="bg-spiral" src="/Assets/UI/Screens/spiral.svg" alt="">
-    </div>
-
     <!-- Toolbar -->
     <div class="toolbar">
       <button class="btn-back" @click="$emit('back')">
@@ -69,29 +65,8 @@ function selectLevel(n) {
 .levels-screen {
   position: absolute;
   inset: 0;
-  background: #000;
   pointer-events: auto;
   overflow: hidden;
-}
-
-.bg-wrap {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.bg-spiral {
-  position: absolute;
-  left: -226px;
-  top: -537px;
-  width: 799px;
-  height: 799px;
-  animation: spin 15s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Toolbar: top 100px in 852 = 11.7% */

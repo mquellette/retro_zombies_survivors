@@ -2,6 +2,11 @@
   <div ref="containerEl" class="game-container">
     <div ref="pixiEl" class="pixi-wrap"></div>
     <div class="ui-overlay">
+      <!-- Persistent background + spiral (visible on all screens except splash and game) -->
+      <div v-if="store.screen !== 'game' && store.screen !== 'splash'" class="screen-bg">
+        <img class="spiral" src="/Assets/UI/Screens/spiral.svg" alt="">
+      </div>
+
       <!-- Splash -->
       <SplashScreen
         v-if="store.screen === 'splash'"
@@ -191,6 +196,29 @@ function onReroll(index) {
   overflow: hidden;
   width: 100vw;
   height: 100vh;
+  background: #086f51;
+}
+
+.screen-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #000;
+}
+
+.spiral {
+  position: absolute;
+  left: -226px;
+  top: -537px;
+  width: 799px;
+  height: 799px;
+  animation: spin 15s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 .pixi-wrap {
   width: 100%;

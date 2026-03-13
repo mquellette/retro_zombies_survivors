@@ -30,11 +30,11 @@
       <div class="counters">
         <div class="counter">
           <span class="counter-val">{{ store.kills }}</span>
-          <img class="counter-icon" src="/Assets/UI/HUD/skull_icon Background Removed.png" alt="">
+          <img class="counter-icon" src="/Assets/UI/Icons/Stats/ic-stats-skull.png" alt="">
         </div>
         <div class="counter">
           <span class="counter-val">{{ store.coins }}</span>
-          <img class="counter-icon" src="/Assets/UI/HUD/coin_icon Background Removed.png" alt="">
+          <img class="counter-icon" src="/Assets/UI/Icons/Stats/ic-currency-disk.png" alt="">
         </div>
       </div>
     </div>

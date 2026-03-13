@@ -86,6 +86,7 @@ export function createEnemy(x, y, type, elite) {
     elite: isElite,
     hitCooldown: 0,
     dir: 0,
+    gender: Math.random() < 0.5 ? 'male' : 'female',
   }
 }
 
