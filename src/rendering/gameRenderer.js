@@ -1,6 +1,6 @@
 import { Container, Sprite, Graphics } from 'pixi.js'
 import { GAME_W, GAME_H, COL } from '../constants.js'
-import { getTexture, getCellSize } from './spriteManager.js'
+import { getHeroTexture, getZombieTexture, getZombieCellSize } from './spriteManager.js'
 import { createJoystickGraphics, updateJoystick } from './joystickRenderer.js'
 import * as engine from '../game/gameEngine.js'
 
@@ -8,7 +8,7 @@ import * as engine from '../game/gameEngine.js'
 let bgLayer, gemLayer, enemyLayer, bulletLayer, playerLayer, joystickLayer
 
 // Sprite pools
-const enemySprites = new Map()   // entity.id -> { sprite, hpBg, hpBar }
+const enemySprites = new Map()   // entity.id -> { container, sprite, hpBg, hpBar }
 const bulletSprites = new Map()  // entity.id -> sprite
 const gemSprites = new Map()     // entity.id -> sprite
 let playerSprite = null
@@ -49,19 +49,10 @@ export function sync() {
   bgRect.rect(0, 0, GAME_W, GAME_H)
   bgRect.fill({ color: 0x1f6b4a })
 
-  // --- Gems ---
   _syncGems()
-
-  // --- Enemies ---
   _syncEnemies()
-
-  // --- Bullets ---
   _syncBullets()
-
-  // --- Player ---
   _syncPlayer(p)
-
-  // --- Joystick ---
   updateJoystick()
 }
 
@@ -80,7 +71,6 @@ function _syncGems() {
     spr.x = g.x
     spr.y = g.y
   }
-  // Remove dead
   for (const [id, spr] of gemSprites) {
     if (!activeIds.has(id)) {
       gemLayer.removeChild(spr)
@@ -96,22 +86,20 @@ function _syncEnemies() {
     activeIds.add(e.id)
     let data = enemySprites.get(e.id)
     if (!data) {
-      data = _createEnemySpriteData(e)
+      data = _createEnemySpriteData()
       enemySprites.set(e.id, data)
     }
 
-    // Update texture
-    const tex = getTexture('zombie_walk', e.dir || 0, 0)
+    const tex = getZombieTexture(e.dir || 0, 0)
     if (tex) {
       data.sprite.texture = tex
       data.sprite.visible = true
-      const cellSize = getCellSize('zombie_walk')
+      const cellSize = getZombieCellSize()
       const drawH = ZOMBIE_DRAW_H
       const drawW = Math.round(drawH * (cellSize.w / cellSize.h))
       data.sprite.width = drawW
       data.sprite.height = drawH
     } else {
-      // Fallback: colored rect
       data.sprite.visible = false
     }
 
@@ -143,7 +131,7 @@ function _syncEnemies() {
   }
 }
 
-function _createEnemySpriteData(e) {
+function _createEnemySpriteData() {
   const container = new Container()
   const sprite = new Sprite()
   sprite.anchor.set(0.5, 0.5)
@@ -189,15 +177,19 @@ function _syncPlayer(p) {
     playerLayer.addChild(playerSprite, playerHpBg, playerHpBar)
   }
 
-  const tex = getTexture('hero_walk', p.dir || 0, 0)
+  const tex = getHeroTexture(p.dir || 0)
   if (tex) {
     playerSprite.texture = tex
     playerSprite.visible = true
-    const cellSize = getCellSize('hero_walk')
-    const drawH = HERO_DRAW_H
-    const drawW = Math.round(drawH * (cellSize.w / cellSize.h))
-    playerSprite.width = drawW
-    playerSprite.height = drawH
+    // Scale proportionally to HERO_DRAW_H
+    const origW = tex.width
+    const origH = tex.height
+    if (origH > 0) {
+      const drawH = HERO_DRAW_H
+      const drawW = Math.round(drawH * (origW / origH))
+      playerSprite.width = drawW
+      playerSprite.height = drawH
+    }
   }
 
   playerSprite.x = p.x
@@ -221,7 +213,6 @@ function _syncPlayer(p) {
 }
 
 export function reset() {
-  // Clear all sprite pools
   for (const [, spr] of gemSprites) { spr.destroy() }
   gemSprites.clear()
   gemLayer?.removeChildren()

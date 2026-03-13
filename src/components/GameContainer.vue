@@ -38,7 +38,7 @@ import { Application } from 'pixi.js'
 import { GAME_W, GAME_H, setGameH } from '../constants.js'
 import { gameStore as store } from '../store/gameStore.js'
 import { loadAssets } from '../assets/assetLoader.js'
-import { buildTextures } from '../rendering/spriteManager.js'
+import { buildHeroTextures, buildZombieTextures } from '../rendering/spriteManager.js'
 import { createLayers, sync, reset } from '../rendering/gameRenderer.js'
 import * as engine from '../game/gameEngine.js'
 import { joystick } from '../input/joystick.js'
@@ -76,8 +76,8 @@ onMounted(async () => {
 
   // Load assets
   await loadAssets()
-  buildTextures('hero_walk')
-  buildTextures('zombie_walk')
+  buildHeroTextures()
+  buildZombieTextures()
 
   // Create render layers
   createLayers(app.stage)

@@ -1,6 +1,7 @@
-// Sector center angles for each spritesheet row (degrees, 0°=right, CW in screen coords)
-// Row order (CCW): 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=down-right, 7=right
-const _dirCenters = [90, 135, 180, 225, 270, 315, 45, 0]
+// Direction indices and their angles (degrees, 0°=right, CW in screen coords)
+// 0=down, 1=down-left, 2=left, 3=up-left, 4=up, 5=up-right, 6=right, 7=down-right
+export const DIR_NAMES = ['down', 'down-left', 'left', 'up-left', 'up', 'up-right', 'right', 'down-right']
+const _dirCenters = [90, 135, 180, 225, 270, 315, 0, 45]
 
 function _angleDist(a, b) {
   let d = Math.abs(a - b) % 360
