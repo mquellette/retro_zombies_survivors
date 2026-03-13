@@ -5,7 +5,7 @@
       class="splash-logo"
       :class="{ 'logo-up': phase >= 1 }"
       src="/Assets/UI/Screens/logo.png"
-      alt="Retro Zombie Survivors"
+      alt=""
     >
   </div>
 </template>
@@ -19,9 +19,7 @@ let timer1 = null
 let timer2 = null
 
 onMounted(() => {
-  // After 2s, animate logo up
   timer1 = setTimeout(() => { phase.value = 1 }, 2000)
-  // After logo animation (1s transition) + short pause, done
   timer2 = setTimeout(() => { emit('done') }, 3500)
 })
 
@@ -42,31 +40,33 @@ function skip() {
   position: absolute;
   inset: 0;
   background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   pointer-events: auto;
   overflow: hidden;
 }
 
 .splash-bg {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
   height: 100%;
   object-fit: cover;
 }
 
 .splash-logo {
-  position: relative;
+  position: absolute;
+  top: 37.1%;
+  left: 0;
   width: 100%;
-  max-width: 393px;
+  height: auto;
   z-index: 1;
-  transition: transform 1s ease-in-out;
-  transform: translateY(0);
+  transition: top 300ms ease-out;
 }
 
 .logo-up {
-  transform: translateY(-40%);
+  top: 11%;
 }
 </style>

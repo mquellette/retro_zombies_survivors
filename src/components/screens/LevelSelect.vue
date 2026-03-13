@@ -1,7 +1,8 @@
 <template>
   <div class="levels-screen">
-    <!-- Spiral background -->
-    <div class="bg-spiral"></div>
+    <div class="bg-wrap">
+      <img class="bg-spiral" src="/Assets/UI/Screens/spiral.svg" alt="">
+    </div>
 
     <!-- Toolbar -->
     <div class="toolbar">
@@ -71,29 +72,33 @@ function selectLevel(n) {
   background: #000;
   pointer-events: auto;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+}
+
+.bg-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 .bg-spiral {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 60% 20%, #c0392b 0%, transparent 50%),
-    radial-gradient(ellipse at 30% 70%, #c0392b 0%, transparent 50%);
-  opacity: 0.5;
+  left: -226px;
+  top: -537px;
+  width: 799px;
+  height: 799px;
 }
 
-/* Toolbar */
+/* Toolbar: top 100px in 852 = 11.7% */
 .toolbar {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  top: 11.7%;
+  left: 24px;
+  right: 24px;
+  height: 48px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 100px 24px 0;
-  height: 148px;
-  flex-shrink: 0;
 }
 
 .btn-back {
@@ -114,14 +119,14 @@ function selectLevel(n) {
   white-space: nowrap;
 }
 
-/* VHS Preview */
+/* VHS Preview: top 172 in 852 = 20.2% */
 .vhs-preview {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  top: 20.2%;
+  left: 24px;
   width: 345px;
   height: 204px;
-  margin: 24px auto 0;
-  flex-shrink: 0;
 }
 
 .vhs-preview-img {
@@ -137,7 +142,7 @@ function selectLevel(n) {
   left: 50%;
   transform: translate(-50%, -50%);
   background: #fff;
-  padding: 8px 12px;
+  padding: 8px 0;
   text-align: center;
   width: 137px;
 }
@@ -157,15 +162,16 @@ function selectLevel(n) {
   color: #000;
 }
 
-/* Level Grid */
+/* Level Grid: row1 top 431 = 50.6%, row2 top 503 = 59% */
 .level-grid {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  top: 50.6%;
+  left: 24px;
+  width: 345px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 345px;
-  margin: 24px auto 0;
 }
 
 .level-row {
@@ -214,13 +220,14 @@ function selectLevel(n) {
   font-size: 14px;
 }
 
-/* Start Button */
+/* Start Button: bottom 24px */
 .start-btn {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  bottom: 24px;
+  left: 24px;
   width: 345px;
   height: 64px;
-  margin: auto auto 24px;
   background: #208f35;
   border: none;
   color: #fff;

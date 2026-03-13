@@ -1,13 +1,13 @@
 <template>
   <div class="menu-screen">
-    <img class="menu-bg" src="/Assets/UI/Screens/Background-menu.png" alt="">
-    <div class="menu-content">
-      <img class="menu-logo" src="/Assets/UI/Screens/logo.png" alt="">
-      <div class="menu-buttons">
-        <button class="menu-btn story" @click="$emit('play')">Сюжетный режим</button>
-        <button class="menu-btn endless disabled">Бесконечный забег</button>
-        <button class="menu-btn settings disabled">Настройки</button>
-      </div>
+    <div class="menu-bg">
+      <img class="menu-spiral" src="/Assets/UI/Screens/spiral.svg" alt="">
+    </div>
+    <img class="menu-logo" src="/Assets/UI/Screens/logo.png" alt="">
+    <div class="menu-buttons">
+      <button class="menu-btn story" @click="$emit('play')">Сюжетный режим</button>
+      <button class="menu-btn endless disabled">Бесконечный забег</button>
+      <button class="menu-btn settings disabled">Настройки</button>
     </div>
   </div>
 </template>
@@ -28,35 +28,35 @@ defineEmits(['play'])
 .menu-bg {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  overflow: hidden;
 }
 
-.menu-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  padding: 0 24px;
+.menu-spiral {
+  position: absolute;
+  left: -226px;
+  top: -537px;
+  width: 799px;
+  height: 799px;
 }
 
 .menu-logo {
+  position: absolute;
+  top: 11%;
+  left: 0;
   width: 100%;
-  max-width: 345px;
-  margin-top: 15%;
+  height: auto;
+  z-index: 1;
 }
 
 .menu-buttons {
+  position: absolute;
+  top: 46.1%;
+  left: 24px;
+  right: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 100%;
-  max-width: 345px;
-  margin-top: auto;
-  margin-bottom: 30%;
+  z-index: 1;
 }
 
 .menu-btn {
