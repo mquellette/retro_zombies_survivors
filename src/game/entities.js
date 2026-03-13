@@ -94,8 +94,27 @@ export function createGem(x, y, value) {
   return {
     id: _nextId++,
     x, y,
-    w: 8, h: 8,
+    w: 12, h: 12,
     value: value || 1,
     magnetSpeed: 150,
+  }
+}
+
+export function createDisk(x, y) {
+  return {
+    id: _nextId++,
+    x, y,
+    w: 12, h: 12,
+    magnetSpeed: 120,
+  }
+}
+
+export function createCola(x, y, heal) {
+  return {
+    id: _nextId++,
+    x, y,
+    w: 12, h: 12,
+    heal: heal || 15,
+    magnetSpeed: 120,
   }
 }

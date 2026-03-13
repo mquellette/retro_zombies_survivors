@@ -4,7 +4,7 @@ import { dist, clamp, rndInt, rectCollide } from '../utils.js'
 import { getDirFrame } from '../direction.js'
 import { joystick } from '../input/joystick.js'
 import { gameStore } from '../store/gameStore.js'
-import { createPlayer, createGem } from './entities.js'
+import { createPlayer, createGem, createCola, createDisk } from './entities.js'
 import { spawner } from './spawner.js'
 import { updateWeapons, updateProjectiles } from './weaponSystem.js'
 
@@ -13,6 +13,9 @@ export let player = null
 export let projectiles = []
 export let enemies = []
 export let gems = []
+export let colas = []
+export let disks = []
+let _lastDiskDropTime = -60  // allow first drop immediately
 
 
 export function init() {
@@ -20,6 +23,9 @@ export function init() {
   projectiles = []
   enemies = []
   gems = []
+  colas = []
+  disks = []
+  _lastDiskDropTime = -60
   spawner.reset()
 
   gameStore.gameState = 'playing'
@@ -76,9 +82,12 @@ export function update(dt) {
     const e = enemies[j]
     if (e.hp <= 0) {
       gems.push(createGem(e.x, e.y, e.xp))
-      if (Math.random() < CONFIG.loot.chestDropChance) {
-        const heal = rndInt(CONFIG.loot.chestHealMin, CONFIG.loot.chestHealMax)
-        p.hp = Math.min(p.hp + heal, p.maxHp)
+      if (Math.random() < 0.03) {
+        colas.push(createCola(e.x, e.y, rndInt(10, 25)))
+      }
+      if (Math.random() < 0.03 && (gameStore.elapsed - _lastDiskDropTime) >= 60) {
+        disks.push(createDisk(e.x, e.y))
+        _lastDiskDropTime = gameStore.elapsed
       }
       enemies.splice(j, 1)
       p.kills++
@@ -136,6 +145,40 @@ export function update(dt) {
     }
   }
 
+  // Cola pickups
+  for (let i = colas.length - 1; i >= 0; i--) {
+    const c = colas[i]
+    const d = dist(c, p)
+    if (d < magnetRange) {
+      const cdx = p.x - c.x
+      const cdy = p.y - c.y
+      const len = d || 1
+      c.x += (cdx / len) * c.magnetSpeed * dt
+      c.y += (cdy / len) * c.magnetSpeed * dt
+    }
+    if (d < 10) {
+      p.hp = Math.min(p.hp + c.heal, p.maxHp)
+      colas.splice(i, 1)
+    }
+  }
+
+  // Disk pickups (currency)
+  for (let i = disks.length - 1; i >= 0; i--) {
+    const dk = disks[i]
+    const d = dist(dk, p)
+    if (d < magnetRange) {
+      const ddx = p.x - dk.x
+      const ddy = p.y - dk.y
+      const len = d || 1
+      dk.x += (ddx / len) * dk.magnetSpeed * dt
+      dk.y += (ddy / len) * dk.magnetSpeed * dt
+    }
+    if (d < 10) {
+      p.coins++
+      disks.splice(i, 1)
+    }
+  }
+
   _syncStore()
 }
 
@@ -175,9 +218,30 @@ export function rerollChoice(index) {
 function _triggerLevelUp() {
   gameStore.gameState = 'levelup'
   gameStore.selectedUpgrade = -1
+
   const pool = _buildUpgradePool()
-  const shuffled = pool.sort(() => Math.random() - 0.5)
-  gameStore.levelUpChoices = shuffled.slice(0, 3)
+  const stats = pool.filter(c => c.type === 'stat')
+  const weapons = pool.filter(c => c.type !== 'stat')
+
+  // Pick 3 choices: each slot has 25% chance of weapon, 75% stat
+  const choices = []
+  for (let i = 0; i < 3; i++) {
+    const useWeapon = Math.random() < 0.25 && weapons.length > 0
+    const src = useWeapon ? weapons : stats
+    if (src.length === 0) continue
+    const idx = Math.floor(Math.random() * src.length)
+    choices.push(src[idx])
+    src.splice(idx, 1) // don't repeat
+  }
+  // Fill remaining if needed
+  const remaining = [...stats, ...weapons]
+  while (choices.length < 3 && remaining.length > 0) {
+    const idx = Math.floor(Math.random() * remaining.length)
+    choices.push(remaining[idx])
+    remaining.splice(idx, 1)
+  }
+
+  gameStore.levelUpChoices = choices
 }
 
 function _buildUpgradePool() {

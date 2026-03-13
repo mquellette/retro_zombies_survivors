@@ -40,16 +40,26 @@
 
       <!-- In-game UI -->
       <template v-if="store.screen === 'game'">
-        <GameHUD />
+        <GameHUD
+          v-if="store.gameState !== 'gameover' && store.gameState !== 'victory' && store.gameState !== 'paused'"
+          @pause="onPause"
+        />
         <LevelUpModal
           v-if="store.gameState === 'levelup'"
           @choose="onUpgrade"
           @reroll="onReroll"
         />
+        <PauseMenu
+          v-if="store.gameState === 'paused'"
+          @resume="onResume"
+          @restart="onRetry"
+          @menu="onMenu"
+        />
         <GameOverScreen
           v-if="store.gameState === 'gameover' || store.gameState === 'victory'"
           :victory="store.gameState === 'victory'"
           @retry="onRetry"
+          @menu="onMenu"
         />
       </template>
     </div>
@@ -57,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { Application } from 'pixi.js'
 import { GAME_W, GAME_H, setGameH } from '../constants.js'
 import { gameStore as store } from '../store/gameStore.js'
@@ -67,6 +77,7 @@ import { createLayers, sync, reset } from '../rendering/gameRenderer.js'
 import * as engine from '../game/gameEngine.js'
 import { joystick } from '../input/joystick.js'
 import { applyUpgrade, rerollChoice } from '../game/gameEngine.js'
+import * as music from '../audio/audioManager.js'
 
 import SplashScreen from './screens/SplashScreen.vue'
 import MenuScreen from './screens/MenuScreen.vue'
@@ -76,6 +87,7 @@ import CountdownScreen from './screens/CountdownScreen.vue'
 import GameHUD from './hud/GameHUD.vue'
 import LevelUpModal from './overlays/LevelUpModal.vue'
 import GameOverScreen from './overlays/GameOverScreen.vue'
+import PauseMenu from './overlays/PauseMenu.vue'
 
 const containerEl = ref(null)
 const pixiEl = ref(null)
@@ -133,7 +145,23 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('resize', _resize)
   if (app) app.destroy(true)
+  music.stop()
 })
+
+// Music control based on screen & game state
+watch(
+  () => [store.screen, store.gameState],
+  ([screen, state]) => {
+    if (screen === 'menu' || screen === 'levels' || screen === 'loading') {
+      music.play('menu')
+    } else if (screen === 'game' && state === 'gameover') {
+      music.play('defeat')
+    } else if (screen === 'game') {
+      music.stop()
+    }
+  },
+  { immediate: true }
+)
 
 function _resize() {
   if (!app || !containerEl.value) return
@@ -179,6 +207,21 @@ function startGame() {
 
 function onRetry() {
   store.screen = 'loading'
+}
+
+function onMenu() {
+  store.screen = 'menu'
+  store.gameState = 'idle'
+}
+
+function onPause() {
+  if (store.gameState === 'playing') {
+    store.gameState = 'paused'
+  }
+}
+
+function onResume() {
+  store.gameState = 'playing'
 }
 
 function onUpgrade(index) {

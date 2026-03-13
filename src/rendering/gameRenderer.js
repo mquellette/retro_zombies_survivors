@@ -1,4 +1,4 @@
-import { Container, Sprite, Graphics } from 'pixi.js'
+import { Container, Sprite, Graphics, Assets } from 'pixi.js'
 import { GAME_W, GAME_H, COL } from '../constants.js'
 import { getHeroTexture, getZombieTexture, getZombieCellSize } from './spriteManager.js'
 import { createJoystickGraphics, updateJoystick } from './joystickRenderer.js'
@@ -10,7 +10,9 @@ let bgLayer, gemLayer, enemyLayer, projectileLayer, playerLayer, joystickLayer
 // Sprite pools
 const enemySprites = new Map()       // entity.id -> { container, sprite, hpBg, hpBar }
 const projectileSprites = new Map()  // entity.id -> Graphics
-const gemSprites = new Map()         // entity.id -> Graphics
+const gemSprites = new Map()         // entity.id -> Sprite
+const colaSprites = new Map()        // entity.id -> Sprite
+const diskSprites = new Map()        // entity.id -> Sprite
 let playerSprite = null
 let playerHpBg = null
 let playerHpBar = null
@@ -50,6 +52,8 @@ export function sync() {
   bgRect.fill({ color: 0x086f51 })
 
   _syncGems()
+  _syncColas()
+  _syncDisks()
   _syncEnemies()
   _syncProjectiles()
   _syncPlayer(p)
@@ -58,13 +62,21 @@ export function sync() {
 
 function _syncGems() {
   const activeIds = new Set()
+  const brainTex = Assets.get('brain_drop')
   for (const g of engine.gems) {
     activeIds.add(g.id)
     let spr = gemSprites.get(g.id)
     if (!spr) {
-      spr = new Graphics()
-      spr.rect(-4, -4, 8, 8)
-      spr.fill({ color: 0x00ccff })
+      if (brainTex) {
+        spr = new Sprite(brainTex)
+        spr.anchor.set(0.5, 0.5)
+        spr.width = 14
+        spr.height = 14
+      } else {
+        spr = new Graphics()
+        spr.rect(-4, -4, 8, 8)
+        spr.fill({ color: 0x00ccff })
+      }
       gemLayer.addChild(spr)
       gemSprites.set(g.id, spr)
     }
@@ -76,6 +88,70 @@ function _syncGems() {
       gemLayer.removeChild(spr)
       spr.destroy()
       gemSprites.delete(id)
+    }
+  }
+}
+
+function _syncColas() {
+  const activeIds = new Set()
+  const colaTex = Assets.get('cola_drop')
+  for (const c of engine.colas) {
+    activeIds.add(c.id)
+    let spr = colaSprites.get(c.id)
+    if (!spr) {
+      if (colaTex) {
+        spr = new Sprite(colaTex)
+        spr.anchor.set(0.5, 0.5)
+        spr.width = 16
+        spr.height = 16
+      } else {
+        spr = new Graphics()
+        spr.rect(-4, -4, 8, 8)
+        spr.fill({ color: 0xff4444 })
+      }
+      gemLayer.addChild(spr)
+      colaSprites.set(c.id, spr)
+    }
+    spr.x = c.x
+    spr.y = c.y
+  }
+  for (const [id, spr] of colaSprites) {
+    if (!activeIds.has(id)) {
+      gemLayer.removeChild(spr)
+      spr.destroy()
+      colaSprites.delete(id)
+    }
+  }
+}
+
+function _syncDisks() {
+  const activeIds = new Set()
+  const diskTex = Assets.get('coin_icon')
+  for (const dk of engine.disks) {
+    activeIds.add(dk.id)
+    let spr = diskSprites.get(dk.id)
+    if (!spr) {
+      if (diskTex) {
+        spr = new Sprite(diskTex)
+        spr.anchor.set(0.5, 0.5)
+        spr.width = 14
+        spr.height = 14
+      } else {
+        spr = new Graphics()
+        spr.circle(0, 0, 5)
+        spr.fill({ color: 0xffcc00 })
+      }
+      gemLayer.addChild(spr)
+      diskSprites.set(dk.id, spr)
+    }
+    spr.x = dk.x
+    spr.y = dk.y
+  }
+  for (const [id, spr] of diskSprites) {
+    if (!activeIds.has(id)) {
+      gemLayer.removeChild(spr)
+      spr.destroy()
+      diskSprites.delete(id)
     }
   }
 }
@@ -301,6 +377,10 @@ function _syncPlayer(p) {
 export function reset() {
   for (const [, spr] of gemSprites) { spr.destroy() }
   gemSprites.clear()
+  for (const [, spr] of colaSprites) { spr.destroy() }
+  colaSprites.clear()
+  for (const [, spr] of diskSprites) { spr.destroy() }
+  diskSprites.clear()
   gemLayer?.removeChildren()
 
   for (const [, data] of enemySprites) { data.container.destroy({ children: true }) }

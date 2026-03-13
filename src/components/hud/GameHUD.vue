@@ -38,12 +38,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Pause button -->
+    <button class="pause-btn" @click="$emit('pause')">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="4" y="3" width="4" height="14" rx="1" fill="#fff"/>
+        <rect x="12" y="3" width="4" height="14" rx="1" fill="#fff"/>
+      </svg>
+    </button>
   </div>
 </template>
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { gameStore as store } from '../../store/gameStore.js'
+
+defineEmits(['pause'])
 
 const safeTop = ref(14)
 
@@ -211,5 +221,28 @@ const formattedTime = computed(() => {
   height: 16px;
   object-fit: cover;
   image-rendering: pixelated;
+}
+
+/* Pause button */
+.pause-btn {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ff9900;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.pause-btn:active {
+  filter: brightness(0.8);
 }
 </style>

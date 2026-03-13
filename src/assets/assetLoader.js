@@ -48,6 +48,9 @@ export async function loadAssets() {
     { alias: 'ic_gun', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-gun.png` },
     { alias: 'ic_guitar', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-guitar.png` },
     { alias: 'ic_shotgun', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-shotgun.png` },
+    { alias: 'ic_boomerang', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-boomerang.png` },
+    { alias: 'ic_chainsaw', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-chainsaw.png` },
+    { alias: 'ic_skateboard', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-skateboard.png` },
   ]
   for (const icon of weaponIcons) {
     Assets.add(icon)
@@ -66,6 +69,11 @@ export async function loadAssets() {
     Assets.add(icon)
     toLoad.push(icon.alias)
   }
+
+  // Collectible sprites (in-game drops)
+  Assets.add({ alias: 'brain_drop', src: `${BASE}Assets/UI/Icons/Collectibles/ic-collectibles-experience.png` })
+  Assets.add({ alias: 'cola_drop', src: `${BASE}Assets/UI/Icons/Collectibles/ic-cola.png` })
+  toLoad.push('brain_drop', 'cola_drop')
 
   await Assets.load(toLoad)
 }

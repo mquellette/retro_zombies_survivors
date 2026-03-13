@@ -1,5 +1,5 @@
 <template>
-  <div class="splash" @click="skip">
+  <div class="splash" @click="onTap">
     <img class="splash-bg" src="/Assets/UI/Screens/Background-splashscreen.png" alt="">
     <img
       class="splash-logo"
@@ -7,6 +7,7 @@
       src="/Assets/UI/Screens/logo.png"
       alt=""
     >
+    <p v-if="waitingForTap" class="tap-hint">Нажмите, чтобы начать</p>
   </div>
 </template>
 
@@ -15,10 +16,11 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits(['done'])
 const phase = ref(0)
+const waitingForTap = ref(false)
+
 let timer1 = null
-let timer2 = null
 let assetsReady = false
-let timerDone = false
+let animDone = false
 
 function preloadImages(urls) {
   return Promise.all(urls.map(url => new Promise(resolve => {
@@ -28,12 +30,13 @@ function preloadImages(urls) {
   })))
 }
 
-function finish() {
-  if (assetsReady && timerDone) emit('done')
+function showTapPrompt() {
+  if (assetsReady && animDone) {
+    waitingForTap.value = true
+  }
 }
 
 onMounted(() => {
-  // Preload fonts + key UI images during splash
   const preload = Promise.all([
     document.fonts.ready,
     preloadImages([
@@ -47,29 +50,27 @@ onMounted(() => {
 
   preload.then(() => {
     assetsReady = true
-    finish()
+    showTapPrompt()
   })
 
   timer1 = setTimeout(() => { phase.value = 1 }, 2000)
-  timer2 = setTimeout(() => {
-    timerDone = true
-    finish()
+  setTimeout(() => {
+    animDone = true
+    showTapPrompt()
   }, 3500)
 })
 
 onUnmounted(() => {
   clearTimeout(timer1)
-  clearTimeout(timer2)
 })
 
-function skip() {
-  clearTimeout(timer1)
-  clearTimeout(timer2)
-  // Still wait for assets if not ready yet
-  if (assetsReady) {
+function onTap() {
+  if (waitingForTap.value) {
     emit('done')
-  } else {
-    timerDone = true
+  } else if (assetsReady) {
+    // Skip animation early
+    animDone = true
+    waitingForTap.value = true
   }
 }
 </script>
@@ -107,5 +108,24 @@ function skip() {
 
 .logo-up {
   top: 11%;
+}
+
+.tap-hint {
+  position: absolute;
+  bottom: 18%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  line-height: 18px;
+  color: #fff;
+  z-index: 2;
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 </style>
