@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import './assets/fonts.css'
 import { initTelegram } from './telegram.js'
 
 // Telegram integration
