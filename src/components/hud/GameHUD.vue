@@ -39,17 +39,25 @@ import { gameStore as store } from '../../store/gameStore.js'
 
 const safeTop = ref(14)
 
+function updateSafeTop() {
+  const tg = window.Telegram?.WebApp
+  if (!tg) return
+  // safeAreaInset = device safe area (notch, status bar)
+  // contentSafeAreaInset = below Telegram's header (Close button, toolbar)
+  const sa = tg.safeAreaInset || {}
+  const csa = tg.contentSafeAreaInset || {}
+  const top = (sa.top || 0) + (csa.top || 0)
+  safeTop.value = top > 0 ? top + 14 : 14
+}
+
 onMounted(() => {
+  updateSafeTop()
   const tg = window.Telegram?.WebApp
   if (tg) {
-    // Telegram provides content safe area insets
-    const inset = tg.contentSafeAreaInset
-    if (inset && inset.top > 0) {
-      safeTop.value = inset.top + 14
-    } else {
-      // Fallback: Telegram header is ~100px on iOS, our content starts after it
-      safeTop.value = 14
-    }
+    tg.onEvent?.('safeAreaChanged', updateSafeTop)
+    tg.onEvent?.('contentSafeAreaChanged', updateSafeTop)
+    // Retry after short delay in case insets aren't ready yet
+    setTimeout(updateSafeTop, 500)
   }
 })
 
