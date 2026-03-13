@@ -105,9 +105,8 @@ onUnmounted(() => {
   top: 421px;
 }
 
-/* State 3: cassette inserted into slot */
+/* State 3: cassette inserted into slot (stays in front of player) */
 .vhs-cassette.inserted {
-  z-index: 1;
   left: 93px;
   top: 436.24px;
   width: 209px;

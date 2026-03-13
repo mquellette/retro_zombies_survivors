@@ -184,6 +184,8 @@ function onUpgrade(index) {
 .game-container {
   position: relative;
   overflow: hidden;
+  width: 100vw;
+  height: 100vh;
 }
 .pixi-wrap {
   width: 100%;
