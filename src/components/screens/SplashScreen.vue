@@ -17,10 +17,44 @@ const emit = defineEmits(['done'])
 const phase = ref(0)
 let timer1 = null
 let timer2 = null
+let assetsReady = false
+let timerDone = false
+
+function preloadImages(urls) {
+  return Promise.all(urls.map(url => new Promise(resolve => {
+    const img = new Image()
+    img.onload = img.onerror = resolve
+    img.src = url
+  })))
+}
+
+function finish() {
+  if (assetsReady && timerDone) emit('done')
+}
 
 onMounted(() => {
+  // Preload fonts + key UI images during splash
+  const preload = Promise.all([
+    document.fonts.ready,
+    preloadImages([
+      '/Assets/UI/Screens/Background-menu.png',
+      '/Assets/UI/Screens/spiral.svg',
+      '/Assets/UI/Screens/level_preview-level_1.png',
+      '/Assets/UI/Screens/vhs-casette.png',
+      '/Assets/UI/Screens/vhs-player.png',
+    ])
+  ])
+
+  preload.then(() => {
+    assetsReady = true
+    finish()
+  })
+
   timer1 = setTimeout(() => { phase.value = 1 }, 2000)
-  timer2 = setTimeout(() => { emit('done') }, 3500)
+  timer2 = setTimeout(() => {
+    timerDone = true
+    finish()
+  }, 3500)
 })
 
 onUnmounted(() => {
@@ -31,7 +65,12 @@ onUnmounted(() => {
 function skip() {
   clearTimeout(timer1)
   clearTimeout(timer2)
-  emit('done')
+  // Still wait for assets if not ready yet
+  if (assetsReady) {
+    emit('done')
+  } else {
+    timerDone = true
+  }
 }
 </script>
 
