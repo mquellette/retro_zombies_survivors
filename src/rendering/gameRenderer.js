@@ -13,6 +13,7 @@ const projectileSprites = new Map()  // entity.id -> Graphics
 const gemSprites = new Map()         // entity.id -> Sprite
 const colaSprites = new Map()        // entity.id -> Sprite
 const diskSprites = new Map()        // entity.id -> Sprite
+const boomboxSprites = new Map()     // entity.id -> Sprite
 let playerSprite = null
 let playerHpBg = null
 let playerHpBar = null
@@ -54,6 +55,7 @@ export function sync() {
   _syncGems()
   _syncColas()
   _syncDisks()
+  _syncBoomboxes()
   _syncEnemies()
   _syncProjectiles()
   _syncPlayer(p)
@@ -70,8 +72,8 @@ function _syncGems() {
       if (brainTex) {
         spr = new Sprite(brainTex)
         spr.anchor.set(0.5, 0.5)
-        spr.width = 14
-        spr.height = 14
+        spr.width = 20
+        spr.height = 20
       } else {
         spr = new Graphics()
         spr.rect(-4, -4, 8, 8)
@@ -102,8 +104,8 @@ function _syncColas() {
       if (colaTex) {
         spr = new Sprite(colaTex)
         spr.anchor.set(0.5, 0.5)
-        spr.width = 16
-        spr.height = 16
+        spr.width = 20
+        spr.height = 20
       } else {
         spr = new Graphics()
         spr.rect(-4, -4, 8, 8)
@@ -134,8 +136,8 @@ function _syncDisks() {
       if (diskTex) {
         spr = new Sprite(diskTex)
         spr.anchor.set(0.5, 0.5)
-        spr.width = 14
-        spr.height = 14
+        spr.width = 20
+        spr.height = 20
       } else {
         spr = new Graphics()
         spr.circle(0, 0, 5)
@@ -152,6 +154,38 @@ function _syncDisks() {
       gemLayer.removeChild(spr)
       spr.destroy()
       diskSprites.delete(id)
+    }
+  }
+}
+
+function _syncBoomboxes() {
+  const activeIds = new Set()
+  const boomTex = Assets.get('boombox_drop')
+  for (const b of engine.boomboxes) {
+    activeIds.add(b.id)
+    let spr = boomboxSprites.get(b.id)
+    if (!spr) {
+      if (boomTex) {
+        spr = new Sprite(boomTex)
+        spr.anchor.set(0.5, 0.5)
+        spr.width = 20
+        spr.height = 20
+      } else {
+        spr = new Graphics()
+        spr.rect(-6, -6, 12, 12)
+        spr.fill({ color: 0xff00ff })
+      }
+      gemLayer.addChild(spr)
+      boomboxSprites.set(b.id, spr)
+    }
+    spr.x = b.x
+    spr.y = b.y
+  }
+  for (const [id, spr] of boomboxSprites) {
+    if (!activeIds.has(id)) {
+      gemLayer.removeChild(spr)
+      spr.destroy()
+      boomboxSprites.delete(id)
     }
   }
 }
@@ -181,6 +215,9 @@ function _syncEnemies() {
 
     data.container.x = e.x
     data.container.y = e.y
+
+    // Damage flash
+    data.sprite.tint = (e.flashTimer > 0) ? 0xff6666 : 0xffffff
 
     // HP bar
     if (e.hp < e.maxHp) {
@@ -381,6 +418,8 @@ export function reset() {
   colaSprites.clear()
   for (const [, spr] of diskSprites) { spr.destroy() }
   diskSprites.clear()
+  for (const [, spr] of boomboxSprites) { spr.destroy() }
+  boomboxSprites.clear()
   gemLayer?.removeChildren()
 
   for (const [, data] of enemySprites) { data.container.destroy({ children: true }) }

@@ -322,6 +322,7 @@ function _checkHits(p, enemies, player, projectiles, idx) {
 
     if (hit) {
       e.hp -= p.damage
+      e.flashTimer = 0.12
       if (p.hitIds) p.hitIds.push(e.id)
 
       // Knockback

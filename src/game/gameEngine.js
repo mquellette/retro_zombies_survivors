@@ -4,7 +4,7 @@ import { dist, clamp, rndInt, rectCollide } from '../utils.js'
 import { getDirFrame } from '../direction.js'
 import { joystick } from '../input/joystick.js'
 import { gameStore } from '../store/gameStore.js'
-import { createPlayer, createGem, createCola, createDisk } from './entities.js'
+import { createPlayer, createGem, createCola, createDisk, createBoombox } from './entities.js'
 import { spawner } from './spawner.js'
 import { updateWeapons, updateProjectiles } from './weaponSystem.js'
 
@@ -15,6 +15,7 @@ export let enemies = []
 export let gems = []
 export let colas = []
 export let disks = []
+export let boomboxes = []
 let _lastDiskDropTime = -60  // allow first drop immediately
 
 
@@ -25,6 +26,7 @@ export function init() {
   gems = []
   colas = []
   disks = []
+  boomboxes = []
   _lastDiskDropTime = -60
   spawner.reset()
 
@@ -81,12 +83,22 @@ export function update(dt) {
   for (let j = enemies.length - 1; j >= 0; j--) {
     const e = enemies[j]
     if (e.hp <= 0) {
-      gems.push(createGem(e.x, e.y, e.xp))
-      if (Math.random() < 0.03) {
-        colas.push(createCola(e.x, e.y, rndInt(10, 25)))
+      const gem = createGem(e.x, e.y, e.xp)
+      _initBounce(gem, p)
+      gems.push(gem)
+      if (Math.random() < 0.01) {
+        const bb = createBoombox(e.x, e.y)
+        _initBounce(bb, p)
+        boomboxes.push(bb)
+      } else if (Math.random() < 0.03) {
+        const cola = createCola(e.x, e.y, rndInt(10, 25))
+        _initBounce(cola, p)
+        colas.push(cola)
       }
       if (Math.random() < 0.03 && (gameStore.elapsed - _lastDiskDropTime) >= 60) {
-        disks.push(createDisk(e.x, e.y))
+        const dk = createDisk(e.x, e.y)
+        _initBounce(dk, p)
+        disks.push(dk)
         _lastDiskDropTime = gameStore.elapsed
       }
       enemies.splice(j, 1)
@@ -107,6 +119,7 @@ export function update(dt) {
       e.dir = getDirFrame(emx, emy, e.dir)
     }
 
+    if (e.flashTimer > 0) e.flashTimer -= dt
     e.hitCooldown -= dt
     if (e.hitCooldown <= 0 && rectCollide(e, p)) {
       const dmg = Math.max(1, e.damage - p.armor)
@@ -121,63 +134,29 @@ export function update(dt) {
     }
   }
 
-  // XP Gems
+  // Update all collectibles (bounce phase + magnet + pickup)
   const magnetRange = CONFIG.player.magnetRange
-  for (let i = gems.length - 1; i >= 0; i--) {
-    const g = gems[i]
-    const d = dist(g, p)
-    if (d < magnetRange) {
-      const gdx = p.x - g.x
-      const gdy = p.y - g.y
-      const len = d || 1
-      g.x += (gdx / len) * g.magnetSpeed * dt
-      g.y += (gdy / len) * g.magnetSpeed * dt
+  _updateCollectibles(dt, p, gems, magnetRange, (g) => {
+    p.xp += g.value
+    if (p.xp >= gameStore.xpToNext) {
+      p.xp -= gameStore.xpToNext
+      p.level++
+      gameStore.xpToNext = CONFIG.leveling.baseXp + (p.level - 1) * CONFIG.leveling.xpPerLevel
+      _triggerLevelUp()
     }
-    if (d < 10) {
-      p.xp += g.value
-      gems.splice(i, 1)
-      if (p.xp >= gameStore.xpToNext) {
-        p.xp -= gameStore.xpToNext
-        p.level++
-        gameStore.xpToNext = CONFIG.leveling.baseXp + (p.level - 1) * CONFIG.leveling.xpPerLevel
-        _triggerLevelUp()
-      }
+  })
+  _updateCollectibles(dt, p, colas, magnetRange, (c) => {
+    p.hp = Math.min(p.hp + c.heal, p.maxHp)
+  })
+  _updateCollectibles(dt, p, disks, magnetRange, () => {
+    p.coins++
+  })
+  _updateCollectibles(dt, p, boomboxes, magnetRange, () => {
+    // Kill all enemies on screen
+    for (const e of enemies) {
+      e.hp = 0
     }
-  }
-
-  // Cola pickups
-  for (let i = colas.length - 1; i >= 0; i--) {
-    const c = colas[i]
-    const d = dist(c, p)
-    if (d < magnetRange) {
-      const cdx = p.x - c.x
-      const cdy = p.y - c.y
-      const len = d || 1
-      c.x += (cdx / len) * c.magnetSpeed * dt
-      c.y += (cdy / len) * c.magnetSpeed * dt
-    }
-    if (d < 10) {
-      p.hp = Math.min(p.hp + c.heal, p.maxHp)
-      colas.splice(i, 1)
-    }
-  }
-
-  // Disk pickups (currency)
-  for (let i = disks.length - 1; i >= 0; i--) {
-    const dk = disks[i]
-    const d = dist(dk, p)
-    if (d < magnetRange) {
-      const ddx = p.x - dk.x
-      const ddy = p.y - dk.y
-      const len = d || 1
-      dk.x += (ddx / len) * dk.magnetSpeed * dt
-      dk.y += (ddy / len) * dk.magnetSpeed * dt
-    }
-    if (d < 10) {
-      p.coins++
-      disks.splice(i, 1)
-    }
-  }
+  })
 
   _syncStore()
 }
@@ -212,6 +191,50 @@ export function rerollChoice(index) {
   if (available.length > 0) {
     const replacement = available[Math.floor(Math.random() * available.length)]
     gameStore.levelUpChoices[index] = replacement
+  }
+}
+
+// Bounce-then-magnet: collectible flies away from player briefly, then gets magnetized
+function _initBounce(item, p) {
+  const dx = item.x - p.x
+  const dy = item.y - p.y
+  const len = Math.sqrt(dx * dx + dy * dy) || 1
+  const bounceSpeed = 80 + Math.random() * 40
+  item._bounceVx = (dx / len) * bounceSpeed + (Math.random() - 0.5) * 40
+  item._bounceVy = (dy / len) * bounceSpeed + (Math.random() - 0.5) * 40
+  item._bounceTime = 0.25 + Math.random() * 0.1
+}
+
+function _updateCollectibles(dt, p, arr, magnetRange, onPickup) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const item = arr[i]
+
+    // Bounce phase
+    if (item._bounceTime > 0) {
+      item._bounceTime -= dt
+      item.x += item._bounceVx * dt
+      item.y += item._bounceVy * dt
+      // Decelerate
+      item._bounceVx *= 0.92
+      item._bounceVy *= 0.92
+      continue
+    }
+
+    // Magnet phase
+    const d = dist(item, p)
+    if (d < magnetRange) {
+      const dx = p.x - item.x
+      const dy = p.y - item.y
+      const len = d || 1
+      // Accelerate towards player
+      item.magnetSpeed = Math.min(item.magnetSpeed + 400 * dt, 500)
+      item.x += (dx / len) * item.magnetSpeed * dt
+      item.y += (dy / len) * item.magnetSpeed * dt
+    }
+    if (d < 10) {
+      onPickup(item)
+      arr.splice(i, 1)
+    }
   }
 }
 

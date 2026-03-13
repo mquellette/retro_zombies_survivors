@@ -118,3 +118,12 @@ export function createCola(x, y, heal) {
     magnetSpeed: 120,
   }
 }
+
+export function createBoombox(x, y) {
+  return {
+    id: _nextId++,
+    x, y,
+    w: 12, h: 12,
+    magnetSpeed: 120,
+  }
+}

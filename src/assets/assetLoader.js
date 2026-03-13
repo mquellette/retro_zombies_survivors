@@ -73,7 +73,8 @@ export async function loadAssets() {
   // Collectible sprites (in-game drops)
   Assets.add({ alias: 'brain_drop', src: `${BASE}Assets/UI/Icons/Collectibles/ic-collectibles-experience.png` })
   Assets.add({ alias: 'cola_drop', src: `${BASE}Assets/UI/Icons/Collectibles/ic-cola.png` })
-  toLoad.push('brain_drop', 'cola_drop')
+  Assets.add({ alias: 'boombox_drop', src: `${BASE}Assets/UI/Icons/Collectibles/ic-collectibles-boombox.png` })
+  toLoad.push('brain_drop', 'cola_drop', 'boombox_drop')
 
   await Assets.load(toLoad)
 }
