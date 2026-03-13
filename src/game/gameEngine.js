@@ -14,8 +14,6 @@ export let projectiles = []
 export let enemies = []
 export let gems = []
 
-// Backward compat alias for renderer
-export { projectiles as bullets }
 
 export function init() {
   player = createPlayer()

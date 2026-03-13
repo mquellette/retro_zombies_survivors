@@ -116,7 +116,7 @@ onMounted(async () => {
   setTimeout(_resize, 300)
   setTimeout(_resize, 1000)
 
-  // Game loop via ticker
+  // Game loop via PixiJS ticker
   app.ticker.add((ticker) => {
     if (store.screen !== 'game') return
     const dt = Math.min(ticker.deltaMS / 1000, 0.05)

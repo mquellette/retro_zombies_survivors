@@ -24,9 +24,13 @@ export async function loadAssets() {
     toLoad.push(alias)
   }
 
-  // Zombie spritesheet (keep for now until individual sprites are provided)
-  Assets.add({ alias: 'zombie_walk', src: 'Assets/Final Assests/Enemies/zombie-basic.png' })
-  toLoad.push('zombie_walk')
+  // Zombie direction sprites
+  for (const dir of DIR_NAMES) {
+    const alias = `zombie_${dir}`
+    const file = HERO_FILES[dir] // same naming convention
+    Assets.add({ alias, src: `Assets/Final Assests/Enemies/zombie-male-adult/${file}` })
+    toLoad.push(alias)
+  }
 
   // UI
   Assets.add({ alias: 'skull_icon', src: 'Assets/UI/HUD/skull_icon Background Removed.png' })

@@ -90,7 +90,7 @@ function _syncEnemies() {
       enemySprites.set(e.id, data)
     }
 
-    const tex = getZombieTexture(e.dir || 0, 0)
+    const tex = getZombieTexture(e.dir || 0)
     if (tex) {
       data.sprite.texture = tex
       data.sprite.visible = true
