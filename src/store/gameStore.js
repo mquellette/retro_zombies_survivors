@@ -1,7 +1,8 @@
 import { reactive } from 'vue'
 
 export const gameStore = reactive({
-  screen: 'menu', // menu | levels | game
+  screen: 'splash', // splash | menu | levels | loading | countdown | game
+  selectedLevel: 1,
 
   // Game state (only relevant when screen === 'game')
   gameState: 'playing', // playing | levelup | gameover | victory

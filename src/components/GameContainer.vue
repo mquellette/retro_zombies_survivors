@@ -2,6 +2,12 @@
   <div ref="containerEl" class="game-container">
     <div ref="pixiEl" class="pixi-wrap"></div>
     <div class="ui-overlay">
+      <!-- Splash -->
+      <SplashScreen
+        v-if="store.screen === 'splash'"
+        @done="store.screen = 'menu'"
+      />
+
       <!-- Menu -->
       <MenuScreen
         v-if="store.screen === 'menu'"
@@ -12,7 +18,19 @@
       <LevelSelect
         v-if="store.screen === 'levels'"
         @back="store.screen = 'menu'"
-        @select="startGame"
+        @select="onLevelSelect"
+      />
+
+      <!-- Loading -->
+      <LoadingScreen
+        v-if="store.screen === 'loading'"
+        @done="store.screen = 'countdown'"
+      />
+
+      <!-- Countdown -->
+      <CountdownScreen
+        v-if="store.screen === 'countdown'"
+        @done="startGame"
       />
 
       <!-- In-game UI -->
@@ -25,7 +43,7 @@
         <GameOverScreen
           v-if="store.gameState === 'gameover' || store.gameState === 'victory'"
           :victory="store.gameState === 'victory'"
-          @retry="startGame"
+          @retry="onRetry"
         />
       </template>
     </div>
@@ -44,8 +62,11 @@ import * as engine from '../game/gameEngine.js'
 import { joystick } from '../input/joystick.js'
 import { applyUpgrade } from '../game/gameEngine.js'
 
+import SplashScreen from './screens/SplashScreen.vue'
 import MenuScreen from './screens/MenuScreen.vue'
 import LevelSelect from './screens/LevelSelect.vue'
+import LoadingScreen from './screens/LoadingScreen.vue'
+import CountdownScreen from './screens/CountdownScreen.vue'
 import GameHUD from './hud/GameHUD.vue'
 import LevelUpModal from './overlays/LevelUpModal.vue'
 import GameOverScreen from './overlays/GameOverScreen.vue'
@@ -139,10 +160,19 @@ function _resize() {
   app.canvas.style.height = containerH + 'px'
 }
 
+function onLevelSelect(level) {
+  store.selectedLevel = level
+  store.screen = 'loading'
+}
+
 function startGame() {
   reset()
   engine.init()
   store.screen = 'game'
+}
+
+function onRetry() {
+  store.screen = 'loading'
 }
 
 function onUpgrade(index) {
