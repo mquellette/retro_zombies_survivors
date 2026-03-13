@@ -37,11 +37,11 @@ onMounted(() => {
   const preload = Promise.all([
     document.fonts.ready,
     preloadImages([
-      '/Assets/UI/Screens/Background-menu.png',
-      '/Assets/UI/Screens/spiral.svg',
-      '/Assets/UI/Screens/level_preview-level_1.png',
-      '/Assets/UI/Screens/vhs-casette.png',
-      '/Assets/UI/Screens/vhs-player.png',
+      `${import.meta.env.BASE_URL}Assets/UI/Screens/Background-menu.png`,
+      `${import.meta.env.BASE_URL}Assets/UI/Screens/spiral.svg`,
+      `${import.meta.env.BASE_URL}Assets/UI/Screens/level_preview-level_1.png`,
+      `${import.meta.env.BASE_URL}Assets/UI/Screens/vhs-casette.png`,
+      `${import.meta.env.BASE_URL}Assets/UI/Screens/vhs-player.png`,
     ])
   ])
 

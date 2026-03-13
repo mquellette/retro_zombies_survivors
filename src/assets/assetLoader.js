@@ -1,6 +1,8 @@
 import { Assets } from 'pixi.js'
 import { DIR_NAMES } from '../direction.js'
 
+const BASE = import.meta.env.BASE_URL
+
 // Map direction name -> filename for hero
 const HERO_FILES = {
   'down':       'down-1.png',
@@ -20,7 +22,7 @@ export async function loadAssets() {
   for (const dir of DIR_NAMES) {
     const alias = `hero_${dir}`
     const file = HERO_FILES[dir]
-    Assets.add({ alias, src: `Assets/Final Assests/Characters/${file}` })
+    Assets.add({ alias, src: `${BASE}Assets/Final Assests/Characters/${file}` })
     toLoad.push(alias)
   }
 
@@ -29,23 +31,23 @@ export async function loadAssets() {
     for (const dir of DIR_NAMES) {
       const alias = `zombie_${gender}_${dir}`
       const file = HERO_FILES[dir]
-      Assets.add({ alias, src: `Assets/Final Assests/Enemies/zombie-${gender}-adult/${file}` })
+      Assets.add({ alias, src: `${BASE}Assets/Final Assests/Enemies/zombie-${gender}-adult/${file}` })
       toLoad.push(alias)
     }
   }
 
   // UI — HUD icons
-  Assets.add({ alias: 'skull_icon', src: 'Assets/UI/Icons/Stats/ic-stats-skull.png' })
-  Assets.add({ alias: 'coin_icon', src: 'Assets/UI/Icons/Stats/ic-currency-disk.png' })
-  Assets.add({ alias: 'xp_icon', src: 'Assets/UI/Icons/Collectibles/ic-collectibles-experience.png' })
+  Assets.add({ alias: 'skull_icon', src: `${BASE}Assets/UI/Icons/Stats/ic-stats-skull.png` })
+  Assets.add({ alias: 'coin_icon', src: `${BASE}Assets/UI/Icons/Stats/ic-currency-disk.png` })
+  Assets.add({ alias: 'xp_icon', src: `${BASE}Assets/UI/Icons/Collectibles/ic-collectibles-experience.png` })
   toLoad.push('skull_icon', 'coin_icon', 'xp_icon')
 
   // Weapon icons
   const weaponIcons = [
-    { alias: 'ic_bat', src: 'Assets/UI/Icons/Weapons/ic-weapon-bat.png' },
-    { alias: 'ic_gun', src: 'Assets/UI/Icons/Weapons/ic-weapon-gun.png' },
-    { alias: 'ic_guitar', src: 'Assets/UI/Icons/Weapons/ic-weapon-guitar.png' },
-    { alias: 'ic_shotgun', src: 'Assets/UI/Icons/Weapons/ic-weapon-shotgun.png' },
+    { alias: 'ic_bat', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-bat.png` },
+    { alias: 'ic_gun', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-gun.png` },
+    { alias: 'ic_guitar', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-guitar.png` },
+    { alias: 'ic_shotgun', src: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-shotgun.png` },
   ]
   for (const icon of weaponIcons) {
     Assets.add(icon)
@@ -54,11 +56,11 @@ export async function loadAssets() {
 
   // Stat upgrade icons
   const statIcons = [
-    { alias: 'ic_damage', src: 'Assets/UI/Icons/Level-up/ic-levelup_damage.png' },
-    { alias: 'ic_max_health', src: 'Assets/UI/Icons/Level-up/ic-levelup_max_health.png' },
-    { alias: 'ic_armor', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-armor.png' },
-    { alias: 'ic_atk_speed', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-attack_speed.png' },
-    { alias: 'ic_move_speed', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-move_speed.png' },
+    { alias: 'ic_damage', src: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_damage.png` },
+    { alias: 'ic_max_health', src: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_max_health.png` },
+    { alias: 'ic_armor', src: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-armor.png` },
+    { alias: 'ic_atk_speed', src: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-attack_speed.png` },
+    { alias: 'ic_move_speed', src: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-move_speed.png` },
   ]
   for (const icon of statIcons) {
     Assets.add(icon)

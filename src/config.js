@@ -1,5 +1,7 @@
 import { TILE } from './constants.js'
 
+const BASE = import.meta.env.BASE_URL
+
 export const CONFIG = {
   player: {
     hp: 100,
@@ -44,35 +46,35 @@ export const CONFIG = {
     moveSpeed: {
       id: 'moveSpeed',
       name: 'Ботинки Скорости',
-      icon: '/Assets/UI/Icons/Level-up/ic-levelup_stats-move_speed.png',
+      icon: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-move_speed.png`,
       desc: '+10% скорость',
       apply(p) { p.speedMul += 0.1 },
     },
     atkSpeed: {
       id: 'atkSpeed',
       name: 'Энергетик',
-      icon: '/Assets/UI/Icons/Level-up/ic-levelup_stats-attack_speed.png',
+      icon: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-attack_speed.png`,
       desc: '+15% скор. атаки',
       apply(p) { p.atkSpeedMul += 0.15 },
     },
     armor: {
       id: 'armor',
       name: 'Батина куртка',
-      icon: '/Assets/UI/Icons/Level-up/ic-levelup_stats-armor.png',
+      icon: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_stats-armor.png`,
       desc: '+5 брони',
       apply(p) { p.armor += 5 },
     },
     maxHp: {
       id: 'maxHp',
       name: 'Походная аптечка',
-      icon: '/Assets/UI/Icons/Level-up/ic-levelup_max_health.png',
+      icon: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_max_health.png`,
       desc: '+20 макс. HP',
       apply(p) { p.maxHp += 20; p.hp = Math.min(p.hp + 20, p.maxHp) },
     },
     damage: {
       id: 'damage',
       name: 'Школьная побрякушка',
-      icon: '/Assets/UI/Icons/Level-up/ic-levelup_damage.png',
+      icon: `${BASE}Assets/UI/Icons/Level-up/ic-levelup_damage.png`,
       desc: '+20% урон',
       apply(p) { p.damageMul += 0.2 },
     },
@@ -82,7 +84,7 @@ export const CONFIG = {
     bat: {
       id: 'bat',
       name: 'Бита',
-      icon: '/Assets/UI/Icons/Weapons/ic-weapon-bat.png',
+      icon: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-bat.png`,
       type: 'melee',
       desc: 'Ближний бой',
       maxLevel: 5,
@@ -97,7 +99,7 @@ export const CONFIG = {
     pistol: {
       id: 'pistol',
       name: 'Пистолет',
-      icon: '/Assets/UI/Icons/Weapons/ic-weapon-gun.png',
+      icon: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-gun.png`,
       type: 'projectile',
       desc: 'Стреляет в ближайшего врага',
       maxLevel: 5,
@@ -112,7 +114,7 @@ export const CONFIG = {
     guitar: {
       id: 'guitar',
       name: 'Гитара',
-      icon: '/Assets/UI/Icons/Weapons/ic-weapon-guitar.png',
+      icon: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-guitar.png`,
       type: 'aoe',
       desc: 'Бьёт по области вокруг игрока',
       maxLevel: 5,
@@ -127,7 +129,7 @@ export const CONFIG = {
     shotgun: {
       id: 'shotgun',
       name: 'Дробовик',
-      icon: '/Assets/UI/Icons/Weapons/ic-weapon-shotgun.png',
+      icon: `${BASE}Assets/UI/Icons/Weapons/ic-weapon-shotgun.png`,
       type: 'spread',
       desc: 'Стреляет дробью, отбрасывая врагов',
       maxLevel: 5,
