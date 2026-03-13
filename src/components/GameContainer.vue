@@ -39,6 +39,7 @@
         <LevelUpModal
           v-if="store.gameState === 'levelup'"
           @choose="onUpgrade"
+          @reroll="onReroll"
         />
         <GameOverScreen
           v-if="store.gameState === 'gameover' || store.gameState === 'victory'"
@@ -60,7 +61,7 @@ import { buildHeroTextures, buildZombieTextures } from '../rendering/spriteManag
 import { createLayers, sync, reset } from '../rendering/gameRenderer.js'
 import * as engine from '../game/gameEngine.js'
 import { joystick } from '../input/joystick.js'
-import { applyUpgrade } from '../game/gameEngine.js'
+import { applyUpgrade, rerollChoice } from '../game/gameEngine.js'
 
 import SplashScreen from './screens/SplashScreen.vue'
 import MenuScreen from './screens/MenuScreen.vue'
@@ -177,6 +178,10 @@ function onRetry() {
 
 function onUpgrade(index) {
   applyUpgrade(index)
+}
+
+function onReroll(index) {
+  rerollChoice(index)
 }
 </script>
 

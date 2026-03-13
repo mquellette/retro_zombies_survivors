@@ -22,4 +22,9 @@ export const gameStore = reactive({
   // Level up
   xpToNext: 5,
   levelUpChoices: [],
+  selectedUpgrade: -1,
+  rerollsLeft: 1,
+
+  // Weapons (synced from engine: [{ id, level, icon, name }])
+  weapons: [],
 })

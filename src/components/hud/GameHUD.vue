@@ -12,7 +12,15 @@
     <div class="info-row">
       <!-- Weapon slots -->
       <div class="weapon-slots">
-        <div class="slot" v-for="i in 4" :key="i"></div>
+        <div class="slot" v-for="i in 4" :key="i">
+          <template v-if="store.weapons[i - 1]">
+            <img v-if="store.weapons[i - 1].icon" class="slot-icon" :src="store.weapons[i - 1].icon" alt="">
+            <span v-else class="slot-placeholder">?</span>
+            <div class="level-pips">
+              <span v-for="pip in 5" :key="pip" class="pip" :class="{ filled: pip <= store.weapons[i - 1].level }" />
+            </div>
+          </template>
+        </div>
       </div>
 
       <!-- Timer -->
@@ -130,9 +138,44 @@ const formattedTime = computed(() => {
 
 .slot {
   width: 24px;
-  height: 24px;
+  height: 30px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+}
+
+.slot-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.slot-placeholder {
+  font-size: 10px;
+  color: #fff;
+  line-height: 20px;
+}
+
+.level-pips {
+  display: flex;
+  gap: 1px;
+}
+
+.pip {
+  width: 3px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 1px;
+}
+
+.pip.filled {
+  background: #fff;
 }
 
 /* Timer */

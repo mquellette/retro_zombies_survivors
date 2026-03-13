@@ -16,35 +16,48 @@ export function createPlayer() {
     speed: c.speed * TILE,
     hp: c.hp,
     maxHp: c.hp,
+    armor: 0,
     xp: 0,
     level: 1,
     kills: 0,
     coins: 0,
-    atkDamage: c.atkDamage,
-    atkSpeed: c.atkSpeed,
-    atkTimer: 0,
-    atkRange: c.atkRange,
     speedMul: 1,
     damageMul: 1,
     atkSpeedMul: 1,
     dir: 0,
+    weapons: [{ id: 'bat', level: 1, timer: 0 }],
   }
 }
 
-export function createBullet(x, y, tx, ty, damage) {
-  const spd = CONFIG.player.bulletSpeed
+// Generic projectile factory
+export function createProjectile(type, x, y, props) {
+  return {
+    id: _nextId++,
+    type,
+    x, y,
+    w: props.w || 6,
+    h: props.h || 6,
+    life: props.life ?? 2,
+    damage: props.damage || 0,
+    ...props,
+  }
+}
+
+// Backward-compatible bullet helper
+export function createBullet(x, y, tx, ty, damage, speed, pierce) {
+  const spd = speed || 200
   const dx = tx - x
   const dy = ty - y
   const len = Math.sqrt(dx * dx + dy * dy) || 1
-  return {
-    id: _nextId++,
-    x, y,
-    w: 6, h: 6,
+  return createProjectile('bullet', x, y, {
     vx: (dx / len) * spd,
     vy: (dy / len) * spd,
     damage,
     life: 2,
-  }
+    w: 6, h: 6,
+    pierce: pierce || 0,
+    hitIds: [],
+  })
 }
 
 const ENEMY_COLORS = {

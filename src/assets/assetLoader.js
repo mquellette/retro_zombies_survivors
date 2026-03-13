@@ -33,5 +33,30 @@ export async function loadAssets() {
   Assets.add({ alias: 'coin_icon', src: 'Assets/UI/HUD/coin_icon Background Removed.png' })
   toLoad.push('skull_icon', 'coin_icon')
 
+  // Weapon icons
+  const weaponIcons = [
+    { alias: 'ic_bat', src: 'Assets/UI/Icons/Weapons/ic-weapon-bat.png' },
+    { alias: 'ic_gun', src: 'Assets/UI/Icons/Weapons/ic-weapon-gun.png' },
+    { alias: 'ic_guitar', src: 'Assets/UI/Icons/Weapons/ic-weapon-guitar.png' },
+    { alias: 'ic_shotgun', src: 'Assets/UI/Icons/Weapons/ic-weapon-shotgun.png' },
+  ]
+  for (const icon of weaponIcons) {
+    Assets.add(icon)
+    toLoad.push(icon.alias)
+  }
+
+  // Stat upgrade icons
+  const statIcons = [
+    { alias: 'ic_damage', src: 'Assets/UI/Icons/Level-up/ic-levelup_damage.png' },
+    { alias: 'ic_max_health', src: 'Assets/UI/Icons/Level-up/ic-levelup_max_health.png' },
+    { alias: 'ic_armor', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-armor.png' },
+    { alias: 'ic_atk_speed', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-attack_speed.png' },
+    { alias: 'ic_move_speed', src: 'Assets/UI/Icons/Level-up/ic-levelup_stats-move_speed.png' },
+  ]
+  for (const icon of statIcons) {
+    Assets.add(icon)
+    toLoad.push(icon.alias)
+  }
+
   await Assets.load(toLoad)
 }

@@ -5,12 +5,12 @@ import { createJoystickGraphics, updateJoystick } from './joystickRenderer.js'
 import * as engine from '../game/gameEngine.js'
 
 // Layer containers
-let bgLayer, gemLayer, enemyLayer, bulletLayer, playerLayer, joystickLayer
+let bgLayer, gemLayer, enemyLayer, projectileLayer, playerLayer, joystickLayer
 
 // Sprite pools
-const enemySprites = new Map()   // entity.id -> { container, sprite, hpBg, hpBar }
-const bulletSprites = new Map()  // entity.id -> sprite
-const gemSprites = new Map()     // entity.id -> sprite
+const enemySprites = new Map()       // entity.id -> { container, sprite, hpBg, hpBar }
+const projectileSprites = new Map()  // entity.id -> Graphics
+const gemSprites = new Map()         // entity.id -> Graphics
 let playerSprite = null
 let playerHpBg = null
 let playerHpBar = null
@@ -24,11 +24,11 @@ export function createLayers(stage) {
   bgLayer = new Container()
   gemLayer = new Container()
   enemyLayer = new Container()
-  bulletLayer = new Container()
+  projectileLayer = new Container()
   playerLayer = new Container()
   joystickLayer = new Container()
 
-  stage.addChild(bgLayer, gemLayer, enemyLayer, bulletLayer, playerLayer, joystickLayer)
+  stage.addChild(bgLayer, gemLayer, enemyLayer, projectileLayer, playerLayer, joystickLayer)
 
   // Background
   bgRect = new Graphics()
@@ -37,7 +37,7 @@ export function createLayers(stage) {
   // Joystick
   joystickLayer.addChild(createJoystickGraphics())
 
-  return { bgLayer, gemLayer, enemyLayer, bulletLayer, playerLayer, joystickLayer }
+  return { bgLayer, gemLayer, enemyLayer, projectileLayer, playerLayer, joystickLayer }
 }
 
 export function sync() {
@@ -51,7 +51,7 @@ export function sync() {
 
   _syncGems()
   _syncEnemies()
-  _syncBullets()
+  _syncProjectiles()
   _syncPlayer(p)
   updateJoystick()
 }
@@ -144,27 +144,109 @@ function _createEnemySpriteData() {
   return { container, sprite, hpBg, hpBar }
 }
 
-function _syncBullets() {
+function _syncProjectiles() {
   const activeIds = new Set()
-  for (const b of engine.bullets) {
-    activeIds.add(b.id)
-    let spr = bulletSprites.get(b.id)
+  for (const p of engine.projectiles) {
+    activeIds.add(p.id)
+    let spr = projectileSprites.get(p.id)
     if (!spr) {
-      spr = new Graphics()
-      spr.rect(-3, -3, 6, 6)
-      spr.fill({ color: 0xffff00 })
-      bulletLayer.addChild(spr)
-      bulletSprites.set(b.id, spr)
+      spr = _createProjectileGraphic(p)
+      projectileLayer.addChild(spr)
+      projectileSprites.set(p.id, spr)
     }
-    spr.x = b.x
-    spr.y = b.y
+    _updateProjectileGraphic(spr, p)
   }
-  for (const [id, spr] of bulletSprites) {
+  for (const [id, spr] of projectileSprites) {
     if (!activeIds.has(id)) {
-      bulletLayer.removeChild(spr)
+      projectileLayer.removeChild(spr)
       spr.destroy()
-      bulletSprites.delete(id)
+      projectileSprites.delete(id)
     }
+  }
+}
+
+function _createProjectileGraphic(p) {
+  const g = new Graphics()
+
+  switch (p.type) {
+    case 'bullet':
+      g.rect(-3, -3, 6, 6)
+      g.fill({ color: 0xffff00 })
+      break
+
+    case 'melee_arc':
+      // Drawn dynamically
+      break
+
+    case 'aoe_ring':
+      // Drawn dynamically
+      break
+
+    case 'boomerang':
+      g.rect(-5, -3, 10, 6)
+      g.fill({ color: 0xff8800 })
+      break
+
+    case 'orbit':
+      g.circle(0, 0, 5)
+      g.fill({ color: 0xff4444 })
+      break
+
+    case 'trail':
+      g.rect(-p.w / 2, -p.h / 2, p.w, p.h)
+      g.fill({ color: 0x88ff44, alpha: 0.4 })
+      break
+  }
+
+  return g
+}
+
+function _updateProjectileGraphic(spr, p) {
+  switch (p.type) {
+    case 'bullet':
+      spr.x = p.x
+      spr.y = p.y
+      break
+
+    case 'melee_arc':
+      spr.clear()
+      spr.x = p.x
+      spr.y = p.y
+      // Draw arc
+      spr.moveTo(0, 0)
+      spr.arc(0, 0, p.range, p.angle - p.arcWidth / 2, p.angle + p.arcWidth / 2)
+      spr.lineTo(0, 0)
+      spr.fill({ color: 0xffffff, alpha: 0.3 })
+      break
+
+    case 'aoe_ring':
+      spr.clear()
+      spr.x = p.x
+      spr.y = p.y
+      if (p.currentRadius > 0) {
+        spr.circle(0, 0, p.currentRadius)
+        spr.stroke({ color: 0x00ffff, width: 3, alpha: 0.6 })
+        spr.circle(0, 0, p.currentRadius)
+        spr.fill({ color: 0x00ffff, alpha: 0.1 })
+      }
+      break
+
+    case 'boomerang':
+      spr.x = p.x
+      spr.y = p.y
+      spr.rotation = p.rotation || 0
+      break
+
+    case 'orbit':
+      spr.x = p.x
+      spr.y = p.y
+      break
+
+    case 'trail':
+      spr.x = p.x
+      spr.y = p.y
+      spr.alpha = Math.min(1, p.life)
+      break
   }
 }
 
@@ -181,7 +263,6 @@ function _syncPlayer(p) {
   if (tex) {
     playerSprite.texture = tex
     playerSprite.visible = true
-    // Scale proportionally to HERO_DRAW_H
     const origW = tex.width
     const origH = tex.height
     if (origH > 0) {
@@ -195,7 +276,7 @@ function _syncPlayer(p) {
   playerSprite.x = p.x
   playerSprite.y = p.y
 
-  // HP bar (Figma: 36×6, black bg, #F32121 fill, rounded)
+  // HP bar
   if (p.hp < p.maxHp) {
     playerHpBg.visible = true
     playerHpBar.visible = true
@@ -226,9 +307,9 @@ export function reset() {
   enemySprites.clear()
   enemyLayer?.removeChildren()
 
-  for (const [, spr] of bulletSprites) { spr.destroy() }
-  bulletSprites.clear()
-  bulletLayer?.removeChildren()
+  for (const [, spr] of projectileSprites) { spr.destroy() }
+  projectileSprites.clear()
+  projectileLayer?.removeChildren()
 
   if (playerSprite) {
     playerSprite.destroy()
