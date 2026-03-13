@@ -17,7 +17,7 @@
 
     <!-- VHS Preview -->
     <div class="vhs-preview">
-      <img class="vhs-preview-img" src="/Assets/UI/Screens/vhs-casette.png" alt="">
+      <img class="vhs-preview-img" src="/Assets/UI/Screens/level_preview-level_1.png" alt="">
       <div class="vhs-info">
         <p class="vhs-name">Начало кошмара</p>
         <p class="vhs-detail">90 секунд</p>

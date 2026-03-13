@@ -24,12 +24,12 @@ let t2 = null
 let t3 = null
 
 onMounted(() => {
-  // Phase 1: cassette slides up to VHS entrance (601 → 421)
+  // Phase 1: cassette slides up to VHS entrance (1s transition)
   t1 = setTimeout(() => { phase.value = 1 }, 300)
-  // Phase 2: cassette shrinks into VHS (insert) — placeholder timing
-  t2 = setTimeout(() => { phase.value = 2 }, 1500)
-  // Done
-  t3 = setTimeout(() => emit('done'), 2500)
+  // Phase 2: cassette shrinks into VHS slot (after slide-up finishes)
+  t2 = setTimeout(() => { phase.value = 2 }, 1800)
+  // Done (after shrink animation visible)
+  t3 = setTimeout(() => emit('done'), 3500)
 })
 
 onUnmounted(() => {
