@@ -86,7 +86,7 @@ function selectLevel(n) {
   top: -537px;
   width: 799px;
   height: 799px;
-  animation: spin 30s linear infinite;
+  animation: spin 15s linear infinite;
 }
 
 @keyframes spin {
@@ -133,6 +133,12 @@ function selectLevel(n) {
   left: 24px;
   width: 345px;
   height: 204px;
+  animation: levitate 3s ease-in-out infinite;
+}
+
+@keyframes levitate {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .vhs-preview-img {

@@ -37,7 +37,7 @@ defineEmits(['play'])
   top: -537px;
   width: 799px;
   height: 799px;
-  animation: spin 30s linear infinite;
+  animation: spin 15s linear infinite;
 }
 
 @keyframes spin {
