@@ -1,17 +1,17 @@
 <template>
   <div class="game-hud">
     <!-- XP Bar -->
-    <div class="xp-bar-wrap">
+    <div class="xp-row">
       <div class="xp-bar-bg">
         <div class="xp-bar-fill" :style="{ width: xpPercent + '%' }"></div>
-        <span class="xp-label">LVL {{ store.level }}</span>
       </div>
+      <span class="xp-label">LVL {{ store.level }}</span>
     </div>
 
     <!-- Second row: slots | timer | counters -->
     <div class="info-row">
-      <!-- Ability slots -->
-      <div class="ability-slots">
+      <!-- Weapon slots -->
+      <div class="weapon-slots">
         <div class="slot" v-for="i in 4" :key="i"></div>
       </div>
 
@@ -22,11 +22,11 @@
       <div class="counters">
         <div class="counter">
           <span class="counter-val">{{ store.kills }}</span>
-          <span class="counter-icon">☠</span>
+          <img class="counter-icon" src="/Assets/UI/HUD/skull_icon Background Removed.png" alt="">
         </div>
         <div class="counter">
           <span class="counter-val">{{ store.coins }}</span>
-          <span class="counter-icon">●</span>
+          <img class="counter-icon" src="/Assets/UI/HUD/coin_icon Background Removed.png" alt="">
         </div>
       </div>
     </div>
@@ -36,7 +36,6 @@
 <script setup>
 import { computed } from 'vue'
 import { gameStore as store } from '../../store/gameStore.js'
-import { CONFIG } from '../../config.js'
 
 const xpPercent = computed(() =>
   Math.min((store.xp / store.xpToNext) * 100, 100)
@@ -56,57 +55,94 @@ const formattedTime = computed(() => {
   top: 0;
   left: 0;
   right: 0;
-  padding: 4px 6px;
+  padding: 8px 16px;
   pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
 }
-.xp-bar-wrap {
-  margin-bottom: 6px;
+
+/* XP Bar row */
+.xp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
 }
+
 .xp-bar-bg {
-  position: relative;
+  flex: 1;
   height: 16px;
-  background: #2a0a2a;
-  border: 1px solid #6a1a6a;
+  background: #3b0139;
+  border-radius: 100px;
+  overflow: hidden;
+  padding: 2px;
 }
+
 .xp-bar-fill {
   height: 100%;
-  background: #ff44ff;
+  background: #ff34f8;
+  border-radius: 100px;
   transition: width 0.1s linear;
 }
+
 .xp-label {
-  position: absolute;
-  right: 4px;
-  top: 1px;
-  font: 10px monospace;
+  font-size: 12px;
+  line-height: 14px;
   color: #fff;
+  white-space: nowrap;
 }
+
+/* Info row */
 .info-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
-.ability-slots {
+
+/* Weapon slots */
+.weapon-slots {
   display: flex;
+  gap: 6px;
+}
+
+.slot {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+/* Timer */
+.timer {
+  font-size: 16px;
+  line-height: 16px;
+  color: #fff;
+}
+
+/* Counters */
+.counters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 4px;
 }
-.slot {
-  width: 22px;
-  height: 22px;
-  background: #5a6a5a;
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
-.timer {
-  font: 16px monospace;
+
+.counter-val {
+  font-size: 12px;
+  line-height: 14px;
   color: #fff;
-}
-.counters {
   text-align: right;
 }
-.counter {
-  font: 10px monospace;
-  color: #fff;
-  line-height: 1.5;
-}
+
 .counter-icon {
-  margin-left: 3px;
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+  image-rendering: pixelated;
 }
 </style>
