@@ -47,7 +47,7 @@ export function sync() {
   // Background
   bgRect.clear()
   bgRect.rect(0, 0, GAME_W, GAME_H)
-  bgRect.fill({ color: 0x1f6b4a })
+  bgRect.fill({ color: 0x086f51 })
 
   _syncGems()
   _syncEnemies()
@@ -195,17 +195,22 @@ function _syncPlayer(p) {
   playerSprite.x = p.x
   playerSprite.y = p.y
 
-  // HP bar
+  // HP bar (Figma: 36×6, black bg, #F32121 fill, rounded)
   if (p.hp < p.maxHp) {
     playerHpBg.visible = true
     playerHpBar.visible = true
-    const hpBarW = 28
+    const hpBarW = 36
+    const hpBarH = 6
+    const hpY = p.y + 20
     playerHpBg.clear()
-    playerHpBg.rect(p.x - hpBarW / 2, p.y + 18, hpBarW, 3)
-    playerHpBg.fill({ color: 0x440000 })
+    playerHpBg.roundRect(p.x - hpBarW / 2, hpY, hpBarW, hpBarH, 100)
+    playerHpBg.fill({ color: 0x000000 })
     playerHpBar.clear()
-    playerHpBar.rect(p.x - hpBarW / 2, p.y + 18, hpBarW * (p.hp / p.maxHp), 3)
-    playerHpBar.fill({ color: 0xff3333 })
+    const fillW = hpBarW * (p.hp / p.maxHp)
+    if (fillW > 0) {
+      playerHpBar.roundRect(p.x - hpBarW / 2, hpY, fillW, hpBarH, 100)
+      playerHpBar.fill({ color: 0xf32121 })
+    }
   } else {
     playerHpBg.visible = false
     playerHpBar.visible = false

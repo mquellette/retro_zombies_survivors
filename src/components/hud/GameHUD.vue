@@ -1,5 +1,5 @@
 <template>
-  <div class="game-hud">
+  <div class="game-hud" :style="{ paddingTop: safeTop + 'px' }">
     <!-- XP Bar -->
     <div class="xp-row">
       <div class="xp-bar-bg">
@@ -34,8 +34,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { gameStore as store } from '../../store/gameStore.js'
+
+const safeTop = ref(14)
+
+onMounted(() => {
+  const tg = window.Telegram?.WebApp
+  if (tg) {
+    // Telegram provides content safe area insets
+    const inset = tg.contentSafeAreaInset
+    if (inset && inset.top > 0) {
+      safeTop.value = inset.top + 14
+    } else {
+      // Fallback: Telegram header is ~100px on iOS, our content starts after it
+      safeTop.value = 14
+    }
+  }
+})
 
 const xpPercent = computed(() =>
   Math.min((store.xp / store.xpToNext) * 100, 100)
@@ -55,7 +71,7 @@ const formattedTime = computed(() => {
   top: 0;
   left: 0;
   right: 0;
-  padding: 8px 16px;
+  padding: 14px 16px 0;
   pointer-events: none;
   font-family: 'Press Start 2P', monospace;
 }

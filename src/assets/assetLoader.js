@@ -6,7 +6,7 @@ const HERO_FILES = {
   'down':       'down-1.png',
   'down-left':  'down-left-1.png',
   'left':       'left.png',
-  'up-left':    'up-right-1-1.png',
+  'up-left':    'up-left-1.png',
   'up':         'up-1.png',
   'up-right':   'up-right-1.png',
   'right':      'right.png',

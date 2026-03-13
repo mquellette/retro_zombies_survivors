@@ -63,7 +63,7 @@ onMounted(async () => {
   await app.init({
     width: GAME_W,
     height: GAME_H,
-    backgroundColor: 0x1f6b4a,
+    backgroundColor: 0x086f51,
     resolution: dpr,
     autoDensity: true,
     antialias: false,
