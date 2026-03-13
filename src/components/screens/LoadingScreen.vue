@@ -60,6 +60,12 @@ onUnmounted(() => {
   top: -537px;
   width: 799px;
   height: 799px;
+  animation: spin 30s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .loading-text {
@@ -86,7 +92,7 @@ onUnmounted(() => {
 
 .vhs-cassette {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   left: 29.57px;
   top: 601px;
   width: 335.85px;
@@ -101,6 +107,7 @@ onUnmounted(() => {
 
 /* State 3: cassette inserted into slot */
 .vhs-cassette.inserted {
+  z-index: 1;
   left: 93px;
   top: 436.24px;
   width: 209px;

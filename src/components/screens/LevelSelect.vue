@@ -17,7 +17,7 @@
 
     <!-- VHS Preview -->
     <div class="vhs-preview">
-      <img class="vhs-preview-img" src="/Assets/UI/Screens/level_preview-level_1.png" alt="">
+      <img class="vhs-preview-img" src="/Assets/UI/Screens/vhs-casette.png" alt="">
       <div class="vhs-info">
         <p class="vhs-name">Начало кошмара</p>
         <p class="vhs-detail">90 секунд</p>
@@ -86,6 +86,12 @@ function selectLevel(n) {
   top: -537px;
   width: 799px;
   height: 799px;
+  animation: spin 30s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Toolbar: top 100px in 852 = 11.7% */

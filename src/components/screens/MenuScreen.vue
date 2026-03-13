@@ -37,6 +37,12 @@ defineEmits(['play'])
   top: -537px;
   width: 799px;
   height: 799px;
+  animation: spin 30s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .menu-logo {
